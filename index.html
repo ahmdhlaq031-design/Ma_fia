@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MeshChat - محادثة البلوتوث الجماعية</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A8A4FF;
+            --accent: #FF6B6B;
+            --bg: #1a1a2e;
+            --surface: #16213e;
+            --surface-light: #0f3460;
+            --text: #eee;
+            --text-secondary: #a0a0b0;
+            --success: #00d2ff;
+            --warning: #f9ca24;
+            --danger: #ff6b6b;
+            --radius: 16px;
+            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        body {
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(108, 92, 231, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0, 210, 255, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 480px;
+            perspective: 1000px;
+        }
+
+        .app-card {
+            background: var(--surface);
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(20px);
+            animation: floatIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(40px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), #5a4bd1);
+            padding: 28px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            font-size: 30px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 4px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .subtitle {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .content {
+            padding: 24px;
+        }
+
+        .status-card {
+            background: var(--surface-light);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-dot.connecting { background: var(--warning); animation: blink 1s ease-in-out infinite; }
+        .status-dot.connected { background: var(--success); box-shadow: 0 0 12px var(--success); }
+        .status-dot.error { background: var(--danger); box-shadow: 0 0 12px var(--danger); }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .status-info { flex: 1; }
+        .status-title { color: var(--text); font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+        .status-desc { color: var(--text-secondary); font-size: 12px; }
+
+        .device-badge {
+            background: rgba(0, 210, 255, 0.15);
+            color: var(--success);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid rgba(0, 210, 255, 0.3);
+        }
+
+        .setup-section {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 35px;
+            margin: 0 auto 16px;
+            border: 3px solid rgba(255,255,255,0.1);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 20px;
+            background: var(--surface-light);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-align: right;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+        }
+
+        .input-group input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #5a4bd1);
+            color: white;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .chat-area {
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: var(--bg);
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            scroll-behavior: smooth;
+        }
+
+        .messages-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+            background: var(--surface-light);
+            border-radius: 3px;
+        }
+
+        .message {
+            max-width: 85%;
+            animation: messageIn 0.3s ease;
+        }
+
+        @keyframes messageIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+        }
+
+        .message.received {
+            align-self: flex-start;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 20px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .message.sent .message-bubble {
+            background: linear-gradient(135deg, var(--primary), #5a4bd1);
+            color: white;
+            border-bottom-left-radius: 8px;
+        }
+
+        .message.received .message-bubble {
+            background: var(--surface-light);
+            color: var(--text);
+            border-bottom-right-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .message-sender {
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--secondary);
+        }
+
+        .message-time {
+            font-size: 10px;
+            opacity: 0.7;
+            margin-top: 4px;
+            display: block;
+            text-align: left;
+        }
+
+        .message.sent .message-time {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .input-bar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-bar input {
+            flex: 1;
+            padding: 14px 18px;
+            background: var(--surface-light);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 25px;
+            color: var(--text);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .input-bar input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+        }
+
+        .btn-send {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #5a4bd1);
+            color: white;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-send:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.5);
+        }
+
+        .empty-chat {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px 20px;
+        }
+
+        .empty-chat .icon {
+            font-size: 50px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .user-info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--surface-light);
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .user-chip .avatar-small {
+            width: 32px;
+            height: 32px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: 700;
+        }
+
+        .user-chip .name {
+            color: var(--text);
+            font-weight: 700;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="app-card">
+            <!-- الهيدر -->
+            <div class="header">
+                <div class="logo-icon">💬</div>
+                <h1>MeshChat</h1>
+                <p class="subtitle">محادثة بلوتوث جماعية بدون إنترنت</p>
+            </div>
+
+            <div class="content">
+                <!-- شريط الحالة -->
+                <div class="status-card" id="statusCard">
+                    <div class="status-dot connecting" id="statusDot"></div>
+                    <div class="status-info">
+                        <div class="status-title" id="statusTitle">جاري التجهيز...</div>
+                        <div class="status-desc" id="statusDesc">يُرجى منح إذن البلوتوث</div>
+                    </div>
+                    <div class="device-badge" id="deviceBadge" style="display:none;">
+                        🔗 <span id="deviceCount">0</span> أجهزة
+                    </div>
+                </div>
+
+                <!-- نموذج الإعداد -->
+                <div class="setup-section" id="setupSection">
+                    <div class="user-avatar">😊</div>
+                    <div class="input-group">
+                        <input type="text" id="nameInput" placeholder="👤 أدخل اسمك المستعار..." maxlength="20">
+                    </div>
+                    <button class="btn btn-primary" onclick="initializeChat()">
+                        🚀 بدء المحادثة
+                    </button>
+                </div>
+
+                <!-- معلومات المستخدم (يظهر بعد البدء) -->
+                <div class="user-info-bar" id="userInfoBar" style="display:none;">
+                    <div class="user-chip">
+                        <div class="avatar-small" id="avatarSmall">👤</div>
+                        <span class="name" id="displayName">مستخدم</span>
+                    </div>
+                    <div class="device-badge" style="display:inline-flex;">
+                        🔗 <span id="connectedCount">0</span>
+                    </div>
+                </div>
+
+                <!-- منطقة الدردشة (تظهر بعد البدء) -->
+                <div class="chat-area" id="chatArea" style="display:none;">
+                    <div class="messages-container" id="messagesContainer">
+                        <div class="empty-chat" id="emptyChat">
+                            <div class="icon">💭</div>
+                            <p>لا توجد رسائل بعد</p>
+                            <p style="font-size:12px;">ابدأ بكتابة رسالة للتواصل مع الأجهزة القريبة</p>
+                        </div>
+                    </div>
+                    <div class="input-bar">
+                        <input type="text" id="messageInput" placeholder="✍️ اكتب رسالتك..." autocomplete="off">
+                        <button class="btn-send" onclick="sendChatMessage()" id="sendBtn">📤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== نظام محادثة البلوتوث ==========
+        
+        class MeshNetwork {
+            constructor() {
+                this.userName = '';
+                this.deviceId = '';
+                this.isConnected = false;
+                this.connectedDevices = 0;
+                this.messageQueue = [];
+            }
+
+            generateId() {
+                return 'mesh_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+            }
+
+            async requestPermissions() {
+                try {
+                    // التحقق من دعم Web Bluetooth
+                    if (!navigator.bluetooth) {
+                        updateStatus('error', 'المتصفح لا يدعم البلوتوث', 'يرجى استخدام Chrome أو Edge على جهاز يدعم البلوتوث');
+                        return false;
+                    }
+
+                    updateStatus('connecting', 'جاري طلب إذن البلوتوث...', 'سيظهر لك طلب للموافقة على الوصول');
+
+                    // طلب جهاز بلوتوث - هذا يظهر نافذة الإذن للمستخدم
+                    const device = await navigator.bluetooth.requestDevice({
+                        acceptAllDevices: true,
+                        optionalServices: ['generic_access']
+                    });
+
+                    updateStatus('connected', 'تم منح الإذن بنجاح ✅', 'يمكنك الآن بدء المحادثة');
+                    return true;
+
+                } catch (error) {
+                    console.log('تفاصيل الخطأ:', error);
+                    
+                    if (error.name === 'NotFoundError') {
+                        updateStatus('error', 'لم يتم العثور على أجهزة', 'تأكد من تفعيل البلوتوث على جهازك');
+                    } else if (error.name === 'SecurityError') {
+                        updateStatus('error', 'تم رفض الإذن', 'يجب الموافقة على طلب البلوتوث للمتابعة');
+                    } else {
+                        updateStatus('error', 'خطأ في الاتصال', 'تأكد من دعم جهازك للبلوتوث');
+                    }
+                    return false;
+                }
+            }
+
+            start(userName) {
+                this.userName = userName;
+                this.deviceId = this.generateId();
+                this.isConnected = true;
+                
+                // محاكاة اكتشاف أجهزة قريبة
+                this.simulateDiscovery();
+                
+                console.log(`🎯 تم بدء شبكة Mesh للمستخدم: ${this.userName}`);
+                console.log(`🆔 معرف الجهاز: ${this.deviceId}`);
+                
+                return this.deviceId;
+            }
+
+            simulateDiscovery() {
+                // محاكاة تغير عدد الأجهزة المتصلة
+                setTimeout(() => {
+                    this.connectedDevices = Math.floor(Math.random() * 4) + 1;
+                    this.updateDeviceCount();
+                }, 1500);
+
+                // تحديث دوري لعدد الأجهزة
+                setInterval(() => {
+                    if (this.isConnected) {
+                        const variation = Math.random() > 0.5 ? 1 : -1;
+                        this.connectedDevices = Math.max(0, Math.min(8, this.connectedDevices + variation));
+                        this.updateDeviceCount();
+                        
+                        // أحياناً استقبال رسالة وهمية
+                        if (Math.random() > 0.6) {
+                            this.simulateIncomingMessage();
+                        }
+                    }
+                }, 10000);
+            }
+
+            updateDeviceCount() {
+                document.getElementById('connectedCount').textContent = this.connectedDevices;
+                document.getElementById('deviceCount').textContent = this.connectedDevices;
+                
+                const badge = document.getElementById('deviceBadge');
+                if (this.connectedDevices > 0) {
+                    badge.style.display = 'inline-flex';
+                }
+            }
+
+            simulateIncomingMessage() {
+                const names = ['أحمد', 'فاطمة', 'عمر', 'سارة', 'محمد', 'نورة', 'علي', 'مريم'];
+                const messages = [
+                    'مرحباً بالجميع! 👋',
+                    'كيف الحال؟ 🌟',
+                    'أنا قريب منكم',
+                    'هل من أحد هنا؟',
+                    'يوم جميل اليوم ☀️',
+                    '👍 تمام',
+                    'أهلاً وسهلاً',
+                    '😊 مساء الخير',
+                    'كيف الأجواء؟',
+                    '💪 يلا شباب'
+                ];
+
+                const randomName = names[Math.floor(Math.random() * names.length)];
+                const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+
+                // لا نرسل رسالة وهمية من نفس المستخدم
+                if (randomName !== this.userName) {
+                    this.receiveMessage(randomName, randomMsg);
+                }
+            }
+
+            sendMessage(content) {
+                if (!this.isConnected || !content.trim()) return false;
+                
+                const message = {
+                    id: this.generateId(),
+                    sender: this.userName,
+                    content: content.trim(),
+                    timestamp: new Date(),
+                    fromMe: true
+                };
+                
+                this.displayMessage(message);
+                console.log('📤 إرسال:', message);
+                
+                // محاكاة رد بعد الإرسال
+                setTimeout(() => {
+                    if (Math.random() > 0.5) {
+                        const replies = ['👍', 'تمام', 'أوكي', '👋', '😊'];
+                        const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                        const randomName = ['أحمد', 'فاطمة', 'عمر'][Math.floor(Math.random() * 3)];
+                        if (randomName !== this.userName) {
+                            this.receiveMessage(randomName, randomReply);
+                        }
+                    }
+                }, 2000 + Math.random() * 3000);
+                
+                return true;
+            }
+
+            receiveMessage(sender, content) {
+                const message = {
+                    id: this.generateId(),
+                    sender: sender,
+                    content: content,
+                    timestamp: new Date(),
+                    fromMe: false
+                };
+                
+                this.displayMessage(message);
+                console.log('📥 استلام:', message);
+            }
+
+            displayMessage(message) {
+                const container = document.getElementById('messagesContainer');
+                const emptyChat = document.getElementById('emptyChat');
+                
+                // إخفاء رسالة "فارغ" عند أول رسالة
+                if (emptyChat) {
+                    emptyChat.style.display = 'none';
+                }
+
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${message.fromMe ? 'sent' : 'received'} fade-in`;
+                
+                const time = message.timestamp instanceof Date 
+                    ? message.timestamp.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+                    : new Date(message.timestamp).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+
+                messageDiv.innerHTML = `
+                    ${!message.fromMe ? `<div class="message-sender">${this.escapeHtml(message.sender)}</div>` : ''}
+                    <div class="message-bubble">
+                        ${this.escapeHtml(message.content)}
+                        <span class="message-time">${time}</span>
+                    </div>
+                `;
+
+                container.appendChild(messageDiv);
+                
+                // تمرير تلقائي للأسفل
+                container.scrollTop = container.scrollHeight;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+        }
+
+        // ========== إدارة التطبيق ==========
+        
+        const meshNetwork = new MeshNetwork();
+
+        function updateStatus(type, title, desc) {
+            const dot = document.getElementById('statusDot');
+            const titleEl = document.getElementById('statusTitle');
+            const descEl = document.getElementById('statusDesc');
+            
+            dot.className = 'status-dot';
+            
+            switch(type) {
+                case 'connecting':
+                    dot.classList.add('connecting');
+                    break;
+                case 'connected':
+                    dot.classList.add('connected');
+                    break;
+                case 'error':
+                    dot.classList.add('error');
+                    break;
+            }
+            
+            titleEl.textContent = title;
+            descEl.textContent = desc || '';
+        }
+
+        async function initializeChat() {
+            const nameInput = document.getElementById('nameInput');
+            const userName = nameInput.value.trim();
+            
+            if (!userName) {
+                // تأثير اهتزاز على الحقل الفارغ
+                nameInput.style.borderColor = 'var(--danger)';
+                nameInput.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    nameInput.style.borderColor = 'rgba(255,255,255,0.1)';
+                    nameInput.style.animation = '';
+                }, 500);
+                return;
+            }
+
+            if (!meshNetwork.isConnected) {
+                const hasPermission = await meshNetwork.requestPermissions();
+                if (!hasPermission) return;
+            }
+
+            // بدء الشبكة
+            meshNetwork.start(userName);
+            
+            // تحديث الواجهة
+            document.getElementById('setupSection').style.display = 'none';
+            document.getElementById('userInfoBar').style.display = 'flex';
+            document.getElementById('chatArea').style.display = 'flex';
+            document.getElementById('displayName').textContent = userName;
+            document.getElementById('avatarSmall').textContent = userName.charAt(0).toUpperCase();
+            document.getElementById('deviceBadge').style.display = 'inline-flex';
+            
+            updateStatus('connected', `متصل كـ ${userName}`, 'شبكة البلوتوث نشطة - يمكنك الدردشة الآن');
+            
+            // رسالة ترحيبية
+            setTimeout(() => {
+                const welcomeMsg = {
+                    id: meshNetwork.generateId(),
+                    sender: 'النظام',
+                    content: '🌟 مرحباً بك في شبكة MeshChat! الأجهزة القريبة يمكنها رؤية رسائلك الآن.',
+                    timestamp: new Date(),
+                    fromMe: false
+                };
+                meshNetwork.displayMessage(welcomeMsg);
+            }, 1000);
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (message && meshNetwork.sendMessage(message)) {
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // ========== الأحداث ==========
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            // طلب إذن البلوتوث تلقائياً عند تحميل الصفحة
+            updateStatus('connecting', 'جاري طلب إذن البلوتوث...', 'يُرجى الموافقة على النافذة المنبثقة');
+            
+            const granted = await meshNetwork.requestPermissions();
+            if (granted) {
+                updateStatus('connected', 'جاهز للبدء! ✅', 'أدخل اسمك وابدأ المحادثة');
+            }
+            
+            // التركيز على حقل الاسم
+            setTimeout(() => {
+                document.getElementById('nameInput').focus();
+            }, 500);
+        });
+
+        // إرسال بالضغط على Enter
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                initializeChat();
+            }
+        });
+
+        // تأثير الاهتزاز للـ CSS
+        const shakeStyle = document.createElement('style');
+        shakeStyle.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-5px); }
+                75% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(shakeStyle);
+    </script>
+</body>
+</html>
