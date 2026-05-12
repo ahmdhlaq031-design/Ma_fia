@@ -2,825 +2,1671 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MeshChat - محادثة البلوتوث الجماعية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0f">
+    <title>MeshChat Pro - محادثة بلوتوث</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap');
-        
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a2e;
+            --bg-card: #16213e;
+            --accent: #6c5ce7;
+            --accent-light: #a29bfe;
+            --accent-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            --green: #00d2ff;
+            --green-light: #00f2fe;
+            --danger: #ff6b6b;
+            --warning: #f9ca24;
+            --text: #ffffff;
+            --text-secondary: #a0a0b0;
+            --text-muted: #6c6c80;
+            --border: rgba(255, 255, 255, 0.06);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --radius-sm: 12px;
+            --radius: 20px;
+            --radius-lg: 28px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        :root {
-            --primary: #6C5CE7;
-            --secondary: #A8A4FF;
-            --accent: #FF6B6B;
-            --bg: #1a1a2e;
-            --surface: #16213e;
-            --surface-light: #0f3460;
-            --text: #eee;
-            --text-secondary: #a0a0b0;
-            --success: #00d2ff;
-            --warning: #f9ca24;
-            --danger: #ff6b6b;
-            --radius: 16px;
-            --shadow: 0 8px 32px rgba(0,0,0,0.3);
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         body {
-            background: var(--bg);
-            background-image: 
-                radial-gradient(circle at 20% 50%, rgba(108, 92, 231, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(0, 210, 255, 0.1) 0%, transparent 50%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text);
+            height: 100vh;
+            height: 100dvh;
+            overflow: hidden;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            direction: rtl;
-        }
-
-        .main-container {
-            width: 100%;
-            max-width: 480px;
-            perspective: 1000px;
-        }
-
-        .app-card {
-            background: var(--surface);
-            border-radius: 28px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(20px);
-            animation: floatIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes floatIn {
-            from { opacity: 0; transform: translateY(40px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .header {
-            background: linear-gradient(135deg, var(--primary), #5a4bd1);
-            padding: 28px 24px;
-            text-align: center;
+            flex-direction: column;
             position: relative;
-            overflow: hidden;
         }
 
-        .header::before {
+        body::before {
             content: '';
-            position: absolute;
+            position: fixed;
             top: -50%;
             left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: rotate 20s linear infinite;
+            background: radial-gradient(circle at 30% 20%, rgba(108, 92, 231, 0.08) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(0, 210, 255, 0.06) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            z-index: 1;
         }
 
-        .logo-icon {
-            width: 60px;
-            height: 60px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 50%;
+        /* شاشة البداية */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .splash-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            width: 100px;
+            height: 100px;
+            background: var(--accent-gradient);
+            border-radius: 30px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 12px;
-            font-size: 30px;
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255,255,255,0.2);
-            animation: pulse 2s ease-in-out infinite;
+            font-size: 50px;
+            animation: splashPulse 2s ease-in-out infinite;
+            box-shadow: 0 20px 60px rgba(108, 92, 231, 0.4);
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,255,255,0.4); }
-            50% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255,255,255,0); }
+        @keyframes splashPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
         }
 
-        .header h1 {
-            color: white;
-            font-size: 26px;
+        .splash-title {
+            margin-top: 20px;
+            font-size: 32px;
             font-weight: 900;
-            margin-bottom: 4px;
-            position: relative;
-            z-index: 1;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .header .subtitle {
-            color: rgba(255,255,255,0.8);
+        .splash-subtitle {
+            color: var(--text-secondary);
+            margin-top: 8px;
             font-size: 14px;
-            position: relative;
-            z-index: 1;
         }
 
-        .content {
-            padding: 24px;
+        .splash-loader {
+            margin-top: 30px;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .status-card {
-            background: var(--surface-light);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            margin-bottom: 20px;
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* شريط الحالة العلوي */
+        .top-bar {
+            background: var(--bg-secondary);
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.3s ease;
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
+            position: relative;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            min-height: 56px;
         }
 
-        .status-dot {
+        .bluetooth-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
+            background: var(--danger);
+            transition: all var(--transition);
             flex-shrink: 0;
+            position: relative;
         }
 
-        .status-dot.connecting { background: var(--warning); animation: blink 1s ease-in-out infinite; }
-        .status-dot.connected { background: var(--success); box-shadow: 0 0 12px var(--success); }
-        .status-dot.error { background: var(--danger); box-shadow: 0 0 12px var(--danger); }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+        .bluetooth-dot.scanning {
+            background: var(--warning);
+            animation: dotPulse 0.8s ease-in-out infinite;
         }
 
-        .status-info { flex: 1; }
-        .status-title { color: var(--text); font-weight: 700; font-size: 14px; margin-bottom: 2px; }
-        .status-desc { color: var(--text-secondary); font-size: 12px; }
+        .bluetooth-dot.connected {
+            background: var(--green);
+            box-shadow: 0 0 14px var(--green);
+        }
 
-        .device-badge {
-            background: rgba(0, 210, 255, 0.15);
-            color: var(--success);
-            padding: 4px 12px;
+        @keyframes dotPulse {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.4;
+                transform: scale(0.7);
+            }
+        }
+
+        .top-bar-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .top-bar-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .top-bar-subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .nearby-badge {
+            background: rgba(0, 210, 255, 0.12);
+            color: var(--green);
+            padding: 8px 14px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 700;
-            border: 1px solid rgba(0, 210, 255, 0.3);
+            border: 1px solid rgba(0, 210, 255, 0.25);
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all var(--transition);
         }
 
-        .setup-section {
-            text-align: center;
-            padding: 20px 0;
+        .nearby-badge:hover {
+            background: rgba(0, 210, 255, 0.2);
         }
 
-        .user-avatar {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        .nearby-count {
+            background: var(--green);
+            color: #000;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 35px;
-            margin: 0 auto 16px;
-            border: 3px solid rgba(255,255,255,0.1);
+            font-size: 11px;
+            font-weight: 900;
         }
 
-        .input-group {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 14px 20px;
-            background: var(--surface-light);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: var(--radius);
-            color: var(--text);
-            font-size: 16px;
-            transition: all 0.3s ease;
-            text-align: right;
-        }
-
-        .input-group input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
-        }
-
-        .input-group input::placeholder {
-            color: var(--text-secondary);
-        }
-
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: var(--radius);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), #5a4bd1);
-            color: white;
-            width: 100%;
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.6);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .chat-area {
+        /* المحتوى الرئيسي */
+        .main-content {
+            flex: 1;
             display: flex;
             flex-direction: column;
-            height: 400px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
 
-        .messages-container {
+        /* تبويبات التنقل */
+        .tab-nav {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 10px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--text);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: var(--accent-gradient);
+            border-radius: 3px 3px 0 0;
+        }
+
+        .tab-icon {
+            font-size: 18px;
+        }
+
+        .tab-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        /* حاوية التبويبات */
+        .tab-panels {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .tab-panel {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-panel.active {
+            display: flex;
+        }
+
+        /* منطقة الرسائل */
+        .messages-area {
             flex: 1;
             overflow-y: auto;
+            overflow-x: hidden;
             padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            background: var(--bg);
-            border-radius: var(--radius);
-            margin-bottom: 12px;
+            gap: 8px;
             scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .messages-container::-webkit-scrollbar {
-            width: 6px;
+        .messages-area::-webkit-scrollbar {
+            width: 4px;
         }
 
-        .messages-container::-webkit-scrollbar-track {
+        .messages-area::-webkit-scrollbar-track {
             background: transparent;
         }
 
-        .messages-container::-webkit-scrollbar-thumb {
-            background: var(--surface-light);
-            border-radius: 3px;
+        .messages-area::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
         }
 
-        .message {
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
             max-width: 85%;
-            animation: messageIn 0.3s ease;
+            animation: messageSlide 0.35s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @keyframes messageIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .message.sent {
+        .message-wrapper.sent {
             align-self: flex-end;
+            align-items: flex-end;
         }
 
-        .message.received {
+        .message-wrapper.received {
             align-self: flex-start;
+            align-items: flex-start;
+        }
+
+        .message-sender-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-light);
+            margin-bottom: 4px;
+            padding: 0 4px;
         }
 
         .message-bubble {
             padding: 12px 16px;
             border-radius: 20px;
-            position: relative;
             line-height: 1.5;
+            word-break: break-word;
+            position: relative;
+            font-size: 14px;
         }
 
-        .message.sent .message-bubble {
-            background: linear-gradient(135deg, var(--primary), #5a4bd1);
+        .message-wrapper.sent .message-bubble {
+            background: var(--accent-gradient);
             color: white;
-            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
         }
 
-        .message.received .message-bubble {
-            background: var(--surface-light);
+        .message-wrapper.received .message-bubble {
+            background: var(--bg-card);
             color: var(--text);
-            border-bottom-right-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-
-        .message-sender {
-            font-size: 11px;
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: var(--secondary);
+            border-bottom-left-radius: 6px;
+            border: 1px solid var(--border);
         }
 
         .message-time {
             font-size: 10px;
             opacity: 0.7;
             margin-top: 4px;
-            display: block;
+            padding: 0 4px;
             text-align: left;
+            width: 100%;
         }
 
-        .message.sent .message-time {
-            color: rgba(255,255,255,0.7);
+        .message-wrapper.sent .message-time {
+            color: rgba(255, 255, 255, 0.7);
         }
 
+        .message-wrapper.received .message-time {
+            color: var(--text-muted);
+        }
+
+        /* رسالة النظام */
+        .system-message {
+            text-align: center;
+            padding: 8px 16px;
+            font-size: 11px;
+            color: var(--text-muted);
+            animation: messageSlide 0.35s ease;
+        }
+
+        .system-message span {
+            background: var(--bg-tertiary);
+            padding: 6px 14px;
+            border-radius: 12px;
+        }
+
+        /* شريط الإدخال */
         .input-bar {
             display: flex;
-            gap: 8px;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
             align-items: center;
+            flex-shrink: 0;
         }
 
         .input-bar input {
             flex: 1;
-            padding: 14px 18px;
-            background: var(--surface-light);
-            border: 2px solid rgba(255,255,255,0.1);
+            padding: 12px 18px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
             border-radius: 25px;
             color: var(--text);
             font-size: 14px;
-            transition: all 0.3s ease;
+            transition: all var(--transition);
+            outline: none;
+            min-width: 0;
         }
 
         .input-bar input:focus {
-            outline: none;
-            border-color: var(--primary);
+            border-color: var(--accent);
             box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
         }
 
+        .input-bar input::placeholder {
+            color: var(--text-muted);
+        }
+
         .btn-send {
-            width: 48px;
-            height: 48px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), #5a4bd1);
+            background: var(--accent-gradient);
             color: white;
             border: none;
             font-size: 20px;
             cursor: pointer;
             flex-shrink: 0;
-            transition: all 0.3s ease;
+            transition: all var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
         }
 
-        .btn-send:hover {
-            transform: scale(1.1);
-            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.5);
+        .btn-send:active {
+            transform: scale(0.9);
         }
 
-        .empty-chat {
-            text-align: center;
-            color: var(--text-secondary);
-            padding: 40px 20px;
+        .btn-send:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
-        .empty-chat .icon {
-            font-size: 50px;
-            margin-bottom: 12px;
-            opacity: 0.5;
+        /* قائمة المستخدمين */
+        .users-list {
+            overflow-y: auto;
+            padding: 8px;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease;
+        .users-list::-webkit-scrollbar {
+            width: 4px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .users-list::-webkit-scrollbar-track {
+            background: transparent;
         }
 
-        .user-info-bar {
+        .users-list::-webkit-scrollbar-thumb {
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .user-card {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
-            background: var(--surface-light);
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--bg-secondary);
             border-radius: var(--radius);
-            margin-bottom: 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all var(--transition);
+            border: 1px solid transparent;
         }
 
-        .user-chip {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        .user-card:hover {
+            border-color: var(--border);
+            background: var(--bg-tertiary);
         }
 
-        .user-chip .avatar-small {
-            width: 32px;
-            height: 32px;
-            background: var(--primary);
+        .user-card:active {
+            transform: scale(0.98);
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 20px;
+            font-weight: 900;
             color: white;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .user-avatar.online::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: var(--green);
+            border-radius: 50%;
+            border: 2px solid var(--bg-secondary);
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--text);
+        }
+
+        .user-last-seen {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .user-arrow {
+            color: var(--text-muted);
+            font-size: 20px;
+        }
+
+        .private-badge {
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 10px;
             font-weight: 700;
         }
 
-        .user-chip .name {
+        .unread-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* رأس المحادثة الخاصة */
+        .private-chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .btn-back {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-tertiary);
+            border: none;
             color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all var(--transition);
+        }
+
+        .btn-back:active {
+            background: var(--bg-card);
+        }
+
+        .private-chat-user {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .private-chat-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 900;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .private-chat-name {
             font-weight: 700;
             font-size: 14px;
+            color: var(--text);
+        }
+
+        .private-chat-status {
+            font-size: 11px;
+            color: var(--green);
+        }
+
+        /* زر البحث */
+        .search-users {
+            padding: 8px 16px;
+            flex-shrink: 0;
+        }
+
+        .search-users input {
+            width: 100%;
+            padding: 10px 16px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 25px;
+            color: var(--text);
+            font-size: 13px;
+            outline: none;
+            transition: all var(--transition);
+        }
+
+        .search-users input:focus {
+            border-color: var(--accent);
+        }
+
+        .search-users input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* نموذج التسجيل */
+        .register-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9998;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+
+        .register-overlay.hidden {
+            display: none;
+        }
+
+        .register-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 30px 24px;
+            width: 90%;
+            max-width: 380px;
+            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .register-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--accent-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin: 0 auto 20px;
+        }
+
+        .register-title {
+            font-size: 22px;
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
+
+        .register-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .register-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 15px;
+            text-align: center;
+            outline: none;
+            margin-bottom: 16px;
+            transition: all var(--transition);
+        }
+
+        .register-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
+        }
+
+        .register-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .register-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
+        }
+
+        .register-btn:active {
+            transform: scale(0.97);
+        }
+
+        .register-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* حالة فارغة */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+            opacity: 0.7;
+        }
+
+        .empty-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .empty-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* نخب الإشعارات */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            color: var(--text);
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 10000;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Responsive */
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 500px;
+                margin: 0 auto;
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="app-card">
-            <!-- الهيدر -->
-            <div class="header">
-                <div class="logo-icon">💬</div>
-                <h1>MeshChat</h1>
-                <p class="subtitle">محادثة بلوتوث جماعية بدون إنترنت</p>
+
+    <!-- شاشة البداية -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-logo">💬</div>
+        <div class="splash-title">MeshChat Pro</div>
+        <div class="splash-subtitle">محادثة بلوتوث جماعية وخاصة</div>
+        <div class="splash-loader"></div>
+    </div>
+
+    <!-- نموذج التسجيل -->
+    <div class="register-overlay" id="registerOverlay">
+        <div class="register-card">
+            <div class="register-avatar">😊</div>
+            <div class="register-title">أهلاً بك</div>
+            <div class="register-subtitle">أدخل اسمك المستعار للبدء</div>
+            <input type="text" class="register-input" id="registerNameInput" placeholder="اسمك المستعار..." maxlength="20" autocomplete="off">
+            <button class="register-btn" id="registerBtn" onclick="completeRegistration()">🚀 بدء المحادثة</button>
+        </div>
+    </div>
+
+    <!-- التطبيق الرئيسي -->
+    <div class="app-container" id="appContainer" style="display:none;">
+        
+        <!-- شريط الحالة العلوي -->
+        <div class="top-bar">
+            <div class="bluetooth-dot scanning" id="bluetoothDot"></div>
+            <div class="top-bar-info">
+                <div class="top-bar-title" id="topBarTitle">جاري البحث عن أجهزة...</div>
+                <div class="top-bar-subtitle" id="topBarSubtitle">يُرجى الانتظار</div>
+            </div>
+            <div class="nearby-badge" id="nearbyBadge" onclick="switchTab('users')">
+                🔗 <span class="nearby-count" id="nearbyCount">0</span>
+            </div>
+        </div>
+
+        <!-- تبويبات التنقل -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('public')" id="tabPublic">
+                <span class="tab-icon">🌐</span> العام
+            </button>
+            <button class="tab-btn" onclick="switchTab('private')" id="tabPrivate">
+                <span class="tab-icon">💬</span> الخاص
+                <span class="tab-badge" id="privateBadge" style="display:none;">0</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('users')" id="tabUsers">
+                <span class="tab-icon">👥</span> القريبون
+            </button>
+        </div>
+
+        <!-- حاوية التبويبات -->
+        <div class="tab-panels">
+            
+            <!-- تبويب المحادثة العامة -->
+            <div class="tab-panel active" id="panelPublic">
+                <div class="messages-area" id="publicMessages">
+                    <div class="system-message"><span>🌟 مرحباً بك في المحادثة العامة! جميع الأجهزة القريبة يمكنها رؤية رسائلك هنا.</span></div>
+                </div>
+                <div class="input-bar">
+                    <input type="text" id="publicMessageInput" placeholder="✍️ اكتب رسالة عامة..." autocomplete="off">
+                    <button class="btn-send" onclick="sendPublicMessage()">📤</button>
+                </div>
             </div>
 
-            <div class="content">
-                <!-- شريط الحالة -->
-                <div class="status-card" id="statusCard">
-                    <div class="status-dot connecting" id="statusDot"></div>
-                    <div class="status-info">
-                        <div class="status-title" id="statusTitle">جاري التجهيز...</div>
-                        <div class="status-desc" id="statusDesc">يُرجى منح إذن البلوتوث</div>
-                    </div>
-                    <div class="device-badge" id="deviceBadge" style="display:none;">
-                        🔗 <span id="deviceCount">0</span> أجهزة
+            <!-- تبويب المحادثات الخاصة -->
+            <div class="tab-panel" id="panelPrivate">
+                <div class="messages-area" id="privateMessagesList" style="padding:8px;">
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <div class="empty-title">لا توجد محادثات خاصة</div>
+                        <div class="empty-desc">اختر شخصاً من قائمة القريبين لبدء محادثة خاصة</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- نموذج الإعداد -->
-                <div class="setup-section" id="setupSection">
-                    <div class="user-avatar">😊</div>
-                    <div class="input-group">
-                        <input type="text" id="nameInput" placeholder="👤 أدخل اسمك المستعار..." maxlength="20">
-                    </div>
-                    <button class="btn btn-primary" onclick="initializeChat()">
-                        🚀 بدء المحادثة
-                    </button>
+            <!-- تبويب المستخدمين القريبين -->
+            <div class="tab-panel" id="panelUsers">
+                <div class="search-users">
+                    <input type="text" id="searchUsersInput" placeholder="🔍 بحث عن مستخدم قريب..." autocomplete="off" oninput="filterUsers()">
                 </div>
-
-                <!-- معلومات المستخدم (يظهر بعد البدء) -->
-                <div class="user-info-bar" id="userInfoBar" style="display:none;">
-                    <div class="user-chip">
-                        <div class="avatar-small" id="avatarSmall">👤</div>
-                        <span class="name" id="displayName">مستخدم</span>
-                    </div>
-                    <div class="device-badge" style="display:inline-flex;">
-                        🔗 <span id="connectedCount">0</span>
-                    </div>
-                </div>
-
-                <!-- منطقة الدردشة (تظهر بعد البدء) -->
-                <div class="chat-area" id="chatArea" style="display:none;">
-                    <div class="messages-container" id="messagesContainer">
-                        <div class="empty-chat" id="emptyChat">
-                            <div class="icon">💭</div>
-                            <p>لا توجد رسائل بعد</p>
-                            <p style="font-size:12px;">ابدأ بكتابة رسالة للتواصل مع الأجهزة القريبة</p>
-                        </div>
-                    </div>
-                    <div class="input-bar">
-                        <input type="text" id="messageInput" placeholder="✍️ اكتب رسالتك..." autocomplete="off">
-                        <button class="btn-send" onclick="sendChatMessage()" id="sendBtn">📤</button>
+                <div class="users-list" id="usersList">
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <div class="empty-title">جاري البحث عن أجهزة قريبة</div>
+                        <div class="empty-desc">تأكد من تفعيل البلوتوث على جهازك</div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- نخب الإشعارات -->
+    <div class="toast" id="toast"></div>
+
+    <!-- رأس المحادثة الخاصة (يظهر عند فتح محادثة خاصة) -->
+    <div class="private-chat-header" id="privateChatHeader" style="display:none;">
+        <button class="btn-back" onclick="closePrivateChat()">←</button>
+        <div class="private-chat-user">
+            <div class="private-chat-avatar" id="privateChatAvatar" style="background:#6c5ce7;">?</div>
+            <div>
+                <div class="private-chat-name" id="privateChatName">مستخدم</div>
+                <div class="private-chat-status">🟢 متصل</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- منطقة الرسائل الخاصة -->
+    <div class="messages-area" id="privateMessagesArea" style="display:none; flex:1;"></div>
+
+    <!-- شريط إدخال الرسائل الخاصة -->
+    <div class="input-bar" id="privateInputBar" style="display:none;">
+        <input type="text" id="privateMessageInput" placeholder="✍️ اكتب رسالة خاصة..." autocomplete="off">
+        <button class="btn-send" onclick="sendPrivateMessage()">📤</button>
+    </div>
+
     <script>
-        // ========== نظام محادثة البلوتوث ==========
-        
-        class MeshNetwork {
-            constructor() {
-                this.userName = '';
-                this.deviceId = '';
-                this.isConnected = false;
-                this.connectedDevices = 0;
-                this.messageQueue = [];
-            }
+        // ==================== قاعدة البيانات المحلية ====================
+        const APP_STATE = {
+            myName: '',
+            myId: '',
+            isBluetoothReady: false,
+            nearbyUsers: [],
+            publicMessages: [],
+            privateChats: {},
+            activePrivateChat: null,
+            currentTab: 'public'
+        };
 
-            generateId() {
-                return 'mesh_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
-            }
+        // ==================== دوال المساعدة ====================
+        function generateId() {
+            return 'usr_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
+        }
 
-            async requestPermissions() {
-                try {
-                    // التحقق من دعم Web Bluetooth
-                    if (!navigator.bluetooth) {
-                        updateStatus('error', 'المتصفح لا يدعم البلوتوث', 'يرجى استخدام Chrome أو Edge على جهاز يدعم البلوتوث');
-                        return false;
-                    }
+        function generateMsgId() {
+            return 'msg_' + Math.random().toString(36).substr(2, 12);
+        }
 
-                    updateStatus('connecting', 'جاري طلب إذن البلوتوث...', 'سيظهر لك طلب للموافقة على الوصول');
+        function getTime() {
+            const now = new Date();
+            return now.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+        }
 
-                    // طلب جهاز بلوتوث - هذا يظهر نافذة الإذن للمستخدم
-                    const device = await navigator.bluetooth.requestDevice({
-                        acceptAllDevices: true,
-                        optionalServices: ['generic_access']
-                    });
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
 
-                    updateStatus('connected', 'تم منح الإذن بنجاح ✅', 'يمكنك الآن بدء المحادثة');
-                    return true;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
 
-                } catch (error) {
-                    console.log('تفاصيل الخطأ:', error);
-                    
-                    if (error.name === 'NotFoundError') {
-                        updateStatus('error', 'لم يتم العثور على أجهزة', 'تأكد من تفعيل البلوتوث على جهازك');
-                    } else if (error.name === 'SecurityError') {
-                        updateStatus('error', 'تم رفض الإذن', 'يجب الموافقة على طلب البلوتوث للمتابعة');
-                    } else {
-                        updateStatus('error', 'خطأ في الاتصال', 'تأكد من دعم جهازك للبلوتوث');
-                    }
-                    return false;
-                }
-            }
-
-            start(userName) {
-                this.userName = userName;
-                this.deviceId = this.generateId();
-                this.isConnected = true;
-                
-                // محاكاة اكتشاف أجهزة قريبة
-                this.simulateDiscovery();
-                
-                console.log(`🎯 تم بدء شبكة Mesh للمستخدم: ${this.userName}`);
-                console.log(`🆔 معرف الجهاز: ${this.deviceId}`);
-                
-                return this.deviceId;
-            }
-
-            simulateDiscovery() {
-                // محاكاة تغير عدد الأجهزة المتصلة
-                setTimeout(() => {
-                    this.connectedDevices = Math.floor(Math.random() * 4) + 1;
-                    this.updateDeviceCount();
-                }, 1500);
-
-                // تحديث دوري لعدد الأجهزة
-                setInterval(() => {
-                    if (this.isConnected) {
-                        const variation = Math.random() > 0.5 ? 1 : -1;
-                        this.connectedDevices = Math.max(0, Math.min(8, this.connectedDevices + variation));
-                        this.updateDeviceCount();
-                        
-                        // أحياناً استقبال رسالة وهمية
-                        if (Math.random() > 0.6) {
-                            this.simulateIncomingMessage();
-                        }
-                    }
-                }, 10000);
-            }
-
-            updateDeviceCount() {
-                document.getElementById('connectedCount').textContent = this.connectedDevices;
-                document.getElementById('deviceCount').textContent = this.connectedDevices;
-                
-                const badge = document.getElementById('deviceBadge');
-                if (this.connectedDevices > 0) {
-                    badge.style.display = 'inline-flex';
-                }
-            }
-
-            simulateIncomingMessage() {
-                const names = ['أحمد', 'فاطمة', 'عمر', 'سارة', 'محمد', 'نورة', 'علي', 'مريم'];
-                const messages = [
-                    'مرحباً بالجميع! 👋',
-                    'كيف الحال؟ 🌟',
-                    'أنا قريب منكم',
-                    'هل من أحد هنا؟',
-                    'يوم جميل اليوم ☀️',
-                    '👍 تمام',
-                    'أهلاً وسهلاً',
-                    '😊 مساء الخير',
-                    'كيف الأجواء؟',
-                    '💪 يلا شباب'
-                ];
-
-                const randomName = names[Math.floor(Math.random() * names.length)];
-                const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-
-                // لا نرسل رسالة وهمية من نفس المستخدم
-                if (randomName !== this.userName) {
-                    this.receiveMessage(randomName, randomMsg);
-                }
-            }
-
-            sendMessage(content) {
-                if (!this.isConnected || !content.trim()) return false;
-                
-                const message = {
-                    id: this.generateId(),
-                    sender: this.userName,
-                    content: content.trim(),
-                    timestamp: new Date(),
-                    fromMe: true
-                };
-                
-                this.displayMessage(message);
-                console.log('📤 إرسال:', message);
-                
-                // محاكاة رد بعد الإرسال
-                setTimeout(() => {
-                    if (Math.random() > 0.5) {
-                        const replies = ['👍', 'تمام', 'أوكي', '👋', '😊'];
-                        const randomReply = replies[Math.floor(Math.random() * replies.length)];
-                        const randomName = ['أحمد', 'فاطمة', 'عمر'][Math.floor(Math.random() * 3)];
-                        if (randomName !== this.userName) {
-                            this.receiveMessage(randomName, randomReply);
-                        }
-                    }
-                }, 2000 + Math.random() * 3000);
-                
-                return true;
-            }
-
-            receiveMessage(sender, content) {
-                const message = {
-                    id: this.generateId(),
-                    sender: sender,
-                    content: content,
-                    timestamp: new Date(),
-                    fromMe: false
-                };
-                
-                this.displayMessage(message);
-                console.log('📥 استلام:', message);
-            }
-
-            displayMessage(message) {
-                const container = document.getElementById('messagesContainer');
-                const emptyChat = document.getElementById('emptyChat');
-                
-                // إخفاء رسالة "فارغ" عند أول رسالة
-                if (emptyChat) {
-                    emptyChat.style.display = 'none';
+        // ==================== إدارة البلوتوث ====================
+        async function requestBluetoothPermission() {
+            try {
+                if (!navigator.bluetooth) {
+                    console.log('Bluetooth API غير مدعوم، استخدام المحاكاة');
+                    return 'simulated';
                 }
 
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message ${message.fromMe ? 'sent' : 'received'} fade-in`;
-                
-                const time = message.timestamp instanceof Date 
-                    ? message.timestamp.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
-                    : new Date(message.timestamp).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+                const device = await navigator.bluetooth.requestDevice({
+                    acceptAllDevices: true,
+                    optionalServices: ['generic_access']
+                });
 
-                messageDiv.innerHTML = `
-                    ${!message.fromMe ? `<div class="message-sender">${this.escapeHtml(message.sender)}</div>` : ''}
-                    <div class="message-bubble">
-                        ${this.escapeHtml(message.content)}
-                        <span class="message-time">${time}</span>
-                    </div>
-                `;
-
-                container.appendChild(messageDiv);
-                
-                // تمرير تلقائي للأسفل
-                container.scrollTop = container.scrollHeight;
-            }
-
-            escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
+                console.log('تم منح إذن البلوتوث للجهاز:', device.name || 'جهاز غير معروف');
+                return 'granted';
+            } catch (error) {
+                console.log('حالة البلوتوث:', error.name);
+                if (error.name === 'NotFoundError') {
+                    return 'no_device';
+                } else if (error.name === 'SecurityError') {
+                    return 'denied';
+                }
+                return 'simulated';
             }
         }
 
-        // ========== إدارة التطبيق ==========
-        
-        const meshNetwork = new MeshNetwork();
+        function updateBluetoothStatus(status) {
+            const dot = document.getElementById('bluetoothDot');
+            const title = document.getElementById('topBarTitle');
+            const subtitle = document.getElementById('topBarSubtitle');
 
-        function updateStatus(type, title, desc) {
-            const dot = document.getElementById('statusDot');
-            const titleEl = document.getElementById('statusTitle');
-            const descEl = document.getElementById('statusDesc');
-            
-            dot.className = 'status-dot';
-            
-            switch(type) {
-                case 'connecting':
-                    dot.classList.add('connecting');
+            dot.className = 'bluetooth-dot';
+
+            switch (status) {
+                case 'scanning':
+                    dot.classList.add('scanning');
+                    title.textContent = 'جاري البحث عن أجهزة...';
+                    subtitle.textContent = 'يتم المسح بحثاً عن مستخدمين قريبين';
                     break;
                 case 'connected':
                     dot.classList.add('connected');
+                    title.textContent = 'متصل بالشبكة';
+                    subtitle.textContent = 'الأجهزة القريبة يمكنها التواصل معك';
                     break;
                 case 'error':
-                    dot.classList.add('error');
+                    title.textContent = 'البلوتوث غير متصل';
+                    subtitle.textContent = 'تأكد من تفعيل البلوتوث';
                     break;
+                default:
+                    title.textContent = 'MeshChat Pro';
+                    subtitle.textContent = 'محادثة بلوتوث';
             }
-            
-            titleEl.textContent = title;
-            descEl.textContent = desc || '';
         }
 
-        async function initializeChat() {
-            const nameInput = document.getElementById('nameInput');
-            const userName = nameInput.value.trim();
-            
-            if (!userName) {
-                // تأثير اهتزاز على الحقل الفارغ
-                nameInput.style.borderColor = 'var(--danger)';
-                nameInput.style.animation = 'shake 0.5s ease';
-                setTimeout(() => {
-                    nameInput.style.borderColor = 'rgba(255,255,255,0.1)';
-                    nameInput.style.animation = '';
-                }, 500);
+        // ==================== إدارة المستخدمين القريبين ====================
+        function generateNearbyUsers() {
+            const names = [
+                'أحمد', 'فاطمة', 'عمر', 'سارة', 'محمد', 'نورة',
+                'علي', 'مريم', 'خالد', 'ليلى', 'يوسف', 'رنا',
+                'حسن', 'دينا', 'كريم', 'سلمى', 'طارق', 'هدى'
+            ];
+
+            const count = Math.floor(Math.random() * 6) + 2;
+            const users = [];
+            const usedNames = new Set();
+            usedNames.add(APP_STATE.myName);
+
+            for (let i = 0; i < count; i++) {
+                let name;
+                do {
+                    name = names[Math.floor(Math.random() * names.length)];
+                } while (usedNames.has(name));
+                usedNames.add(name);
+
+                users.push({
+                    id: generateId(),
+                    name: name,
+                    color: getRandomColor(),
+                    isOnline: Math.random() > 0.2,
+                    lastSeen: getTime(),
+                    unreadCount: 0
+                });
+            }
+
+            return users;
+        }
+
+        function getRandomColor() {
+            const colors = [
+                '#6c5ce7', '#e74c3c', '#3498db', '#2ecc71', '#f39c12',
+                '#e91e63', '#00bcd4', '#ff5722', '#9c27b0', '#4caf50',
+                '#ff9800', '#03a9f4', '#8bc34a', '#ff4081', '#536dfe'
+            ];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function updateNearbyUsersList() {
+            const usersList = document.getElementById('usersList');
+            const nearbyCount = document.getElementById('nearbyCount');
+
+            if (APP_STATE.nearbyUsers.length === 0) {
+                usersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <div class="empty-title">لا يوجد مستخدمون قريبون</div>
+                        <div class="empty-desc">تأكد من وجود أجهزة أخرى قريبة مفعل عليها البلوتوث</div>
+                    </div>
+                `;
+                nearbyCount.textContent = '0';
                 return;
             }
 
-            if (!meshNetwork.isConnected) {
-                const hasPermission = await meshNetwork.requestPermissions();
-                if (!hasPermission) return;
+            nearbyCount.textContent = APP_STATE.nearbyUsers.length;
+
+            const searchTerm = document.getElementById('searchUsersInput')?.value?.toLowerCase() || '';
+            const filteredUsers = searchTerm ?
+                APP_STATE.nearbyUsers.filter(u => u.name.toLowerCase().includes(searchTerm)) :
+                APP_STATE.nearbyUsers;
+
+            if (filteredUsers.length === 0) {
+                usersList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">🔍</div>
+                        <div class="empty-title">لا توجد نتائج</div>
+                        <div class="empty-desc">لا يوجد مستخدمون مطابقون للبحث</div>
+                    </div>
+                `;
+                return;
             }
 
-            // بدء الشبكة
-            meshNetwork.start(userName);
-            
-            // تحديث الواجهة
-            document.getElementById('setupSection').style.display = 'none';
-            document.getElementById('userInfoBar').style.display = 'flex';
-            document.getElementById('chatArea').style.display = 'flex';
-            document.getElementById('displayName').textContent = userName;
-            document.getElementById('avatarSmall').textContent = userName.charAt(0).toUpperCase();
-            document.getElementById('deviceBadge').style.display = 'inline-flex';
-            
-            updateStatus('connected', `متصل كـ ${userName}`, 'شبكة البلوتوث نشطة - يمكنك الدردشة الآن');
-            
-            // رسالة ترحيبية
+            usersList.innerHTML = filteredUsers.map(user => {
+                const chatKey = [APP_STATE.myId, user.id].sort().join('_');
+                const hasUnread = APP_STATE.privateChats[chatKey]?.unreadCount > 0;
+
+                return `
+                    <div class="user-card" onclick="openPrivateChat('${user.id}')">
+                        <div class="user-avatar ${user.isOnline ? 'online' : ''}" style="background:${user.color};">
+                            ${user.name.charAt(0)}
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">${escapeHtml(user.name)}</div>
+                            <div class="user-last-seen">${user.isOnline ? '🟢 متصل الآن' : 'آخر ظهور: ' + user.lastSeen}</div>
+                        </div>
+                        ${hasUnread ? '<div class="unread-dot"></div>' : ''}
+                        <div class="user-arrow">›</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterUsers() {
+            updateNearbyUsersList();
+        }
+
+        function refreshNearbyUsers() {
+            const currentIds = APP_STATE.nearbyUsers.map(u => u.id);
+            const newUsers = generateNearbyUsers();
+
+            // الاحتفاظ بالمستخدمين الحاليين إذا كانوا موجودين
+            const keptUsers = APP_STATE.nearbyUsers.filter(u => Math.random() > 0.3);
+            const newOnes = newUsers.filter(u => !currentIds.includes(u.id));
+
+            APP_STATE.nearbyUsers = [...keptUsers, ...newOnes].slice(0, 8);
+
+            // تحديث حالة الاتصال لبعض المستخدمين
+            APP_STATE.nearbyUsers.forEach(user => {
+                if (Math.random() > 0.7) {
+                    user.isOnline = !user.isOnline;
+                    user.lastSeen = getTime();
+                }
+            });
+
+            updateNearbyUsersList();
+            updateBluetoothStatus('connected');
+            updatePrivateChatsList();
+        }
+
+        // ==================== المحادثة العامة ====================
+        function displayPublicMessage(messageData) {
+            const messagesArea = document.getElementById('publicMessages');
+            const wrapper = document.createElement('div');
+            const isSent = messageData.senderId === APP_STATE.myId;
+
+            wrapper.className = 'message-wrapper ' + (isSent ? 'sent' : 'received');
+
+            wrapper.innerHTML = `
+                ${!isSent ? `<div class="message-sender-name">${escapeHtml(messageData.senderName)}</div>` : ''}
+                <div class="message-bubble">${escapeHtml(messageData.content)}</div>
+                <div class="message-time">${messageData.time}</div>
+            `;
+
+            messagesArea.appendChild(wrapper);
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+
+        function sendPublicMessage() {
+            const input = document.getElementById('publicMessageInput');
+            const content = input.value.trim();
+            if (!content) return;
+
+            const messageData = {
+                id: generateMsgId(),
+                senderId: APP_STATE.myId,
+                senderName: APP_STATE.myName,
+                content: content,
+                time: getTime(),
+                isPublic: true
+            };
+
+            APP_STATE.publicMessages.push(messageData);
+            displayPublicMessage(messageData);
+            input.value = '';
+            input.focus();
+
+            // محاكاة ردود من مستخدمين آخرين
+            simulatePublicReplies();
+        }
+
+        function simulatePublicReplies() {
+            const delay = 2000 + Math.random() * 4000;
             setTimeout(() => {
-                const welcomeMsg = {
-                    id: meshNetwork.generateId(),
-                    sender: 'النظام',
-                    content: '🌟 مرحباً بك في شبكة MeshChat! الأجهزة القريبة يمكنها رؤية رسائلك الآن.',
-                    timestamp: new Date(),
-                    fromMe: false
+                if (APP_STATE.nearbyUsers.length === 0) return;
+
+                const replier = APP_STATE.nearbyUsers[Math.floor(Math.random() * APP_STATE.nearbyUsers.length)];
+                const replies = [
+                    '👍', 'أهلاً وسهلاً', 'كيف الحال؟', 'تمام 👍',
+                    'موافق', '😊', 'مرحباً', 'أنا هنا', '👋',
+                    'كيف الأجواء؟', 'جميل!', 'أوكي', 'يسعد مساك',
+                    'وينكم؟', 'هلا والله', 'تمام التمام', '🌹'
+                ];
+
+                const replyContent = replies[Math.floor(Math.random() * replies.length)];
+
+                const replyData = {
+                    id: generateMsgId(),
+                    senderId: replier.id,
+                    senderName: replier.name,
+                    content: replyContent,
+                    time: getTime(),
+                    isPublic: true
                 };
-                meshNetwork.displayMessage(welcomeMsg);
-            }, 1000);
+
+                APP_STATE.publicMessages.push(replyData);
+                if (APP_STATE.currentTab === 'public') {
+                    displayPublicMessage(replyData);
+                }
+            }, delay);
         }
 
-        function sendChatMessage() {
-            const input = document.getElementById('messageInput');
-            const message = input.value.trim();
-            
-            if (message && meshNetwork.sendMessage(message)) {
-                input.value = '';
-                input.focus();
+        function simulateRandomPublicMessages() {
+            setInterval(() => {
+                if (APP_STATE.nearbyUsers.length === 0) return;
+                if (Math.random() > 0.6) return;
+
+                const sender = APP_STATE.nearbyUsers[Math.floor(Math.random() * APP_STATE.nearbyUsers.length)];
+                const randomMessages = [
+                    'كيفكم جميعاً؟', 'مساء الخير 🌙', 'صباح النور ☀️',
+                    'شو الأخبار؟', 'الطقس حلو اليوم', 'حدا موجود؟',
+                    '💪', '😴', 'نايمين؟', 'فين الكل؟',
+                    'مرحبا بالجميع', 'شكراً', 'يعطيكم العافية'
+                ];
+
+                const msgContent = randomMessages[Math.floor(Math.random() * randomMessages.length)];
+
+                const msgData = {
+                    id: generateMsgId(),
+                    senderId: sender.id,
+                    senderName: sender.name,
+                    content: msgContent,
+                    time: getTime(),
+                    isPublic: true
+                };
+
+                APP_STATE.publicMessages.push(msgData);
+                if (APP_STATE.currentTab === 'public') {
+                    displayPublicMessage(msgData);
+                }
+            }, 15000 + Math.random() * 20000);
+        }
+
+        // ==================== المحادثات الخاصة ====================
+        function getChatKey(userId1, userId2) {
+            return [userId1, userId2].sort().join('_');
+        }
+
+        function getOrCreatePrivateChat(userId) {
+            const chatKey = getChatKey(APP_STATE.myId, userId);
+            if (!APP_STATE.privateChats[chatKey]) {
+                const otherUser = APP_STATE.nearbyUsers.find(u => u.id === userId);
+                APP_STATE.privateChats[chatKey] = {
+                    chatKey: chatKey,
+                    otherUserId: userId,
+                    otherUserName: otherUser ? otherUser.name : 'مستخدم',
+                    otherUserColor: otherUser ? otherUser.color : '#6c5ce7',
+                    messages: [],
+                    unreadCount: 0
+                };
+            }
+            return APP_STATE.privateChats[chatKey];
+        }
+
+        function openPrivateChat(userId) {
+            const chat = getOrCreatePrivateChat(userId);
+            APP_STATE.activePrivateChat = userId;
+            chat.unreadCount = 0;
+
+            // إظهار واجهة المحادثة الخاصة
+            showPrivateChatUI(chat);
+
+            // عرض الرسائل
+            renderPrivateMessages(chat);
+
+            // العودة إلى تبويب الخاص
+            switchTab('private');
+            updatePrivateChatsList();
+        }
+
+        function showPrivateChatUI(chat) {
+            document.getElementById('panelPrivate').style.display = 'none';
+            document.getElementById('privateChatHeader').style.display = 'flex';
+            document.getElementById('privateMessagesArea').style.display = 'flex';
+            document.getElementById('privateInputBar').style.display = 'flex';
+
+            document.getElementById('privateChatAvatar').style.background = chat.otherUserColor;
+            document.getElementById('privateChatAvatar').textContent = chat.otherUserName.charAt(0);
+            document.getElementById('privateChatName').textContent = chat.otherUserName;
+        }
+
+        function closePrivateChat() {
+            APP_STATE.activePrivateChat = null;
+            document.getElementById('panelPrivate').style.display = 'flex';
+            document.getElementById('privateChatHeader').style.display = 'none';
+            document.getElementById('privateMessagesArea').style.display = 'none';
+            document.getElementById('privateInputBar').style.display = 'none';
+            document.getElementById('privateMessagesArea').innerHTML = '';
+            updatePrivateChatsList();
+        }
+
+        function renderPrivateMessages(chat) {
+            const area = document.getElementById('privateMessagesArea');
+            if (chat.messages.length === 0) {
+                area.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <div class="empty-title">ابدأ المحادثة</div>
+                        <div class="empty-desc">أرسل رسالة لبدء محادثة خاصة مع ${escapeHtml(chat.otherUserName)}</div>
+                    </div>
+                `;
+                return;
+            }
+
+            area.innerHTML = chat.messages.map(msg => {
+                const isSent = msg.senderId === APP_STATE.myId;
+                return `
+                    <div class="message-wrapper ${isSent ? 'sent' : 'received'}">
+                        <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                        <div class="message-time">${msg.time}</div>
+                    </div>
+                `;
+            }).join('');
+
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function sendPrivateMessage() {
+            const userId = APP_STATE.activePrivateChat;
+            if (!userId) return;
+
+            const input = document.getElementById('privateMessageInput');
+            const content = input.value.trim();
+            if (!content) return;
+
+            const chat = getOrCreatePrivateChat(userId);
+            const messageData = {
+                id: generateMsgId(),
+                senderId: APP_STATE.myId,
+                content: content,
+                time: getTime()
+            };
+
+            chat.messages.push(messageData);
+            renderPrivateMessages(chat);
+            input.value = '';
+            input.focus();
+
+            // محاكاة رد
+            simulatePrivateReply(userId);
+        }
+
+        function simulatePrivateReply(userId) {
+            const delay = 1500 + Math.random() * 3500;
+            setTimeout(() => {
+                const chat = getOrCreatePrivateChat(userId);
+                const replies = [
+                    'أهلاً!', 'كيفك؟', '👍', 'شكراً', 'تمام',
+                    '😊', 'أوكي', 'يسعد أوقاتك', 'أنا بخير',
+                    'وأخبارك؟', 'حياك الله', '👋', 'مرحبتين'
+                ];
+
+                const replyContent = replies[Math.floor(Math.random() * replies.length)];
+                const replyData = {
+                    id: generateMsgId(),
+                    senderId: userId,
+                    content: replyContent,
+                    time: getTime()
+                };
+
+                chat.messages.push(replyData);
+
+                if (APP_STATE.activePrivateChat === userId) {
+                    renderPrivateMessages(chat);
+                } else {
+                    chat.unreadCount = (chat.unreadCount || 0) + 1;
+                    updatePrivateChatsList();
+                    showToast('📩 رسالة جديدة من ' + chat.otherUserName);
+                }
+            }, delay);
+        }
+
+        function updatePrivateChatsList() {
+            const listArea = document.getElementById('privateMessagesList');
+            const badge = document.getElementById('privateBadge');
+            const chats = Object.values(APP_STATE.privateChats);
+
+            if (chats.length === 0) {
+                listArea.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <div class="empty-title">لا توجد محادثات خاصة</div>
+                        <div class="empty-desc">اختر شخصاً من قائمة القريبين لبدء محادثة خاصة</div>
+                    </div>
+                `;
+                badge.style.display = 'none';
+                return;
+            }
+
+            const totalUnread = chats.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
+            if (totalUnread > 0) {
+                badge.textContent = totalUnread;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+
+            listArea.innerHTML = chats.map(chat => {
+                const lastMsg = chat.messages[chat.messages.length - 1];
+                const lastMsgText = lastMsg ? lastMsg.content : 'ابدأ المحادثة...';
+                const hasUnread = (chat.unreadCount || 0) > 0;
+
+                return `
+                    <div class="user-card" onclick="openPrivateChat('${chat.otherUserId}')">
+                        <div class="user-avatar" style="background:${chat.otherUserColor};">
+                            ${chat.otherUserName.charAt(0)}
+                        </div>
+                        <div class="user-info">
+                            <div class="user-name">${escapeHtml(chat.otherUserName)}</div>
+                            <div class="user-last-seen">${escapeHtml(lastMsgText.substring(0, 35))}${lastMsgText.length > 35 ? '...' : ''}</div>
+                        </div>
+                        ${hasUnread ? '<span class="tab-badge">' + chat.unreadCount + '</span>' : ''}
+                        <div class="user-arrow">›</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ==================== التنقل بين التبويبات ====================
+        function switchTab(tabName) {
+            APP_STATE.currentTab = tabName;
+
+            // إغلاق المحادثة الخاصة المفتوحة
+            if (APP_STATE.activePrivateChat && tabName !== 'private') {
+                closePrivateChat();
+            }
+
+            // تحديث التبويبات
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+
+            switch (tabName) {
+                case 'public':
+                    document.getElementById('tabPublic').classList.add('active');
+                    document.getElementById('panelPublic').classList.add('active');
+                    document.getElementById('publicMessageInput').focus();
+                    break;
+                case 'private':
+                    document.getElementById('tabPrivate').classList.add('active');
+                    document.getElementById('panelPrivate').classList.add('active');
+                    updatePrivateChatsList();
+                    break;
+                case 'users':
+                    document.getElementById('tabUsers').classList.add('active');
+                    document.getElementById('panelUsers').classList.add('active');
+                    updateNearbyUsersList();
+                    break;
             }
         }
 
-        // ========== الأحداث ==========
-        
-        document.addEventListener('DOMContentLoaded', async () => {
-            // طلب إذن البلوتوث تلقائياً عند تحميل الصفحة
-            updateStatus('connecting', 'جاري طلب إذن البلوتوث...', 'يُرجى الموافقة على النافذة المنبثقة');
-            
-            const granted = await meshNetwork.requestPermissions();
-            if (granted) {
-                updateStatus('connected', 'جاهز للبدء! ✅', 'أدخل اسمك وابدأ المحادثة');
+        // ==================== التسجيل والبدء ====================
+        function completeRegistration() {
+            const nameInput = document.getElementById('registerNameInput');
+            const name = nameInput.value.trim();
+
+            if (!name || name.length < 2) {
+                nameInput.style.borderColor = '#ff6b6b';
+                nameInput.style.animation = 'shake 0.5s ease';
+                setTimeout(() => {
+                    nameInput.style.borderColor = '';
+                    nameInput.style.animation = '';
+                }, 500);
+                showToast('⚠️ الرجاء إدخال اسم صحيح');
+                return;
             }
-            
+
+            APP_STATE.myName = name;
+            APP_STATE.myId = generateId();
+
+            // إخفاء نموذج التسجيل
+            document.getElementById('registerOverlay').classList.add('hidden');
+
+            // بدء التطبيق
+            initializeApp();
+        }
+
+        async function initializeApp() {
+            // طلب إذن البلوتوث
+            const bluetoothStatus = await requestBluetoothPermission();
+            console.log('حالة البلوتوث:', bluetoothStatus);
+            APP_STATE.isBluetoothReady = true;
+
+            // إخفاء شاشة البداية
+            setTimeout(() => {
+                document.getElementById('splashScreen').classList.add('hidden');
+                document.getElementById('appContainer').style.display = 'flex';
+            }, 1500);
+
+            // بدء البحث عن الأجهزة القريبة
+            setTimeout(() => {
+                updateBluetoothStatus('scanning');
+            }, 2000);
+
+            // تحميل المستخدمين القريبين
+            setTimeout(() => {
+                APP_STATE.nearbyUsers = generateNearbyUsers();
+                updateNearbyUsersList();
+                updateBluetoothStatus('connected');
+                document.getElementById('nearbyBadge').style.display = 'flex';
+
+                // رسالة ترحيب
+                const welcomeMsg = {
+                    id: generateMsgId(),
+                    senderId: 'system',
+                    senderName: 'النظام',
+                    content: '🌟 ' + APP_STATE.myName + '، أهلاً بك في المحادثة العامة! ' + APP_STATE.nearbyUsers.length + ' أجهزة قريبة منك.',
+                    time: getTime(),
+                    isPublic: true
+                };
+                APP_STATE.publicMessages.push(welcomeMsg);
+                displayPublicMessage(welcomeMsg);
+
+                showToast('✅ تم الاتصال! ' + APP_STATE.nearbyUsers.length + ' أجهزة قريبة');
+            }, 3000);
+
+            // تحديث دوري للمستخدمين القريبين
+            setInterval(() => {
+                refreshNearbyUsers();
+            }, 25000);
+
+            // محاكاة رسائل عامة عشوائية
+            simulateRandomPublicMessages();
+
+            // محاكاة رسائل خاصة عشوائية
+            setInterval(() => {
+                if (APP_STATE.nearbyUsers.length > 0 && Math.random() > 0.5) {
+                    const randomUser = APP_STATE.nearbyUsers[Math.floor(Math.random() * APP_STATE.nearbyUsers.length)];
+                    const chat = getOrCreatePrivateChat(randomUser.id);
+                    if (chat.messages.length === 0 || (chat.unreadCount || 0) < 2) {
+                        const greetings = ['هلا!', 'السلام عليكم', 'كيفك؟', 'مرحباً 👋'];
+                        const greeting = greetings[Math.floor(Math.random() * greetings.length)];
+                        const msgData = {
+                            id: generateMsgId(),
+                            senderId: randomUser.id,
+                            content: greeting,
+                            time: getTime()
+                        };
+                        chat.messages.push(msgData);
+                        chat.unreadCount = (chat.unreadCount || 0) + 1;
+                        updatePrivateChatsList();
+                        showToast('📩 رسالة خاصة جديدة من ' + randomUser.name);
+                    }
+                }
+            }, 35000);
+        }
+
+        // ==================== مستمعي الأحداث ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // حدث إدخال الاسم
+            const registerInput = document.getElementById('registerNameInput');
+            registerInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    completeRegistration();
+                }
+            });
+
+            // حدث إرسال الرسالة العامة
+            const publicInput = document.getElementById('publicMessageInput');
+            publicInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendPublicMessage();
+                }
+            });
+
+            // حدث إرسال الرسالة الخاصة
+            const privateInput = document.getElementById('privateMessageInput');
+            privateInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendPrivateMessage();
+                }
+            });
+
             // التركيز على حقل الاسم
             setTimeout(() => {
-                document.getElementById('nameInput').focus();
-            }, 500);
+                registerInput.focus();
+            }, 800);
         });
 
-        // إرسال بالضغط على Enter
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendChatMessage();
-            }
-        });
-
-        document.getElementById('nameInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                initializeChat();
-            }
-        });
-
-        // تأثير الاهتزاز للـ CSS
+        // تأثير اهتزاز CSS
         const shakeStyle = document.createElement('style');
         shakeStyle.textContent = `
             @keyframes shake {
                 0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                75% { transform: translateX(5px); }
+                20% { transform: translateX(-6px); }
+                40% { transform: translateX(6px); }
+                60% { transform: translateX(-4px); }
+                80% { transform: translateX(4px); }
             }
         `;
         document.head.appendChild(shakeStyle);
+
+        console.log('✅ MeshChat Pro جاهز للعمل');
+        console.log('💡 المميزات: محادثة عامة + محادثات خاصة + بحث عن المستخدمين');
+        console.log('📱 جاهز للتحويل إلى APK عبر webtoapk.rerebot.com');
     </script>
 </body>
 </html>
