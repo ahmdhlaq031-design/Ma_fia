@@ -15,7 +15,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        /* ==================== CSS VARIABLES ==================== */
         :root {
             --bg-deep: #060610;
             --bg-primary: #0a0a18;
@@ -26,11 +25,9 @@
             --bg-chat: rgba(10, 10, 24, 0.78);
             --bg-modal: rgba(10, 10, 28, 0.95);
             --bg-input: rgba(255, 255, 255, 0.04);
-            
             --border-glass: rgba(255, 255, 255, 0.08);
             --border-active: rgba(255, 255, 255, 0.18);
             --border-gold: rgba(212, 175, 55, 0.35);
-            
             --gold: #d4af37;
             --gold-bright: #fbbf24;
             --purple: #8b5cf6;
@@ -41,22 +38,18 @@
             --blue-dark: #2563eb;
             --green: #10b981;
             --green-dark: #059669;
-            
             --text: #f1f5f9;
             --text-secondary: #cbd5e1;
             --text-muted: #64748b;
-            
             --radius-sm: 12px;
             --radius-md: 18px;
             --radius-lg: 24px;
             --radius-xl: 32px;
             --radius-full: 9999px;
-            
             --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
             --shadow-md: 0 8px 25px rgba(0,0,0,0.4);
             --shadow-lg: 0 15px 40px rgba(0,0,0,0.55);
             --shadow-xl: 0 25px 60px rgba(0,0,0,0.7);
-            
             --transition: 0.35s cubic-bezier(0.4,0,0.2,1);
             --transition-spring: 0.5s cubic-bezier(0.34,1.56,0.64,1);
         }
@@ -797,7 +790,7 @@
         <div id="unoHand" style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;padding:10px;"></div>
         <button id="unoShoutBtn" class="hidden" onclick="shoutUno()" style="position:fixed;bottom:80px;right:20px;width:55px;height:55px;border-radius:50%;background:var(--red);color:white;border:none;font-weight:900;font-size:0.7rem;cursor:pointer;z-index:50;animation:pulse 1s infinite;">UNO!</button>
     </div>
-    <!-- FIX: نافذة اختيار اللون للكرت Wild -->
+    <!-- نافذة اختيار اللون للكرت Wild (موجودة من قبل) -->
     <div id="unoWildColorPicker" class="modal" onclick="closeUnoColorPicker()">
         <div class="modal-sheet text-center">
             <div class="modal-handle"></div>
@@ -892,6 +885,7 @@
     </div>
 </div>
 
+<!-- ==================== FIREBASE SDK ==================== -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
@@ -932,7 +926,7 @@
         roomListener: null,
         chatListener: null,
         targetRoom: null,
-        pendingUnoCardIndex: null  // FIX: لتخزين الكرت المنتظر للـ Wild
+        pendingUnoCardIndex: null
     };
     
     function generateId(prefix) {
@@ -976,7 +970,6 @@
         if (state.chatListener) { state.chatListener(); state.chatListener = null; }
     }
     
-    // FIX: دالة openGame بدل navigateToGame
     window.openGame = function(game) {
         navigateTo(game);
     };
@@ -1026,6 +1019,7 @@
         });
     }
     
+    // FIX: تعديل دالة startRoomsListener - تأخير التنظيف
     function startRoomsListener(gameType) {
         if (state.roomsListener) {
             state.roomsListener();
@@ -1037,26 +1031,34 @@
         state.roomsListener = onValue(roomsRef, (snapshot) => {
             const rooms = snapshot.val() || {};
             renderRoomsList(rooms, gameType);
-            autoCleanupRooms(rooms);
+            setTimeout(() => autoCleanupRooms(rooms), 1000);
         });
     }
     
+    // FIX: تعديل دالة autoCleanupRooms - عدم حذف الغرف الجديدة
     function autoCleanupRooms(rooms) {
         const now = Date.now();
         const updates = {};
         let hasUpdates = false;
         
         Object.entries(rooms).forEach(([id, room]) => {
+            const playerCount = room.players ? Object.keys(room.players).length : 0;
+            
+            // ما تحذف الغرفة إذا فيها لاعبين
+            if (playerCount === 0) {
+                // بس حذف الغرف الفارغة بعد 5 دقائق
+                if ((now - (room.createdAt || 0)) > 300000) {
+                    updates['rooms/' + id] = null;
+                    hasUpdates = true;
+                }
+            }
+            
             if (room.phase === 'finished' && (now - (room.finishedAt || 0) > 60000)) {
                 updates['rooms/' + id] = null;
                 hasUpdates = true;
             }
-            const playerCount = room.players ? Object.keys(room.players).length : 0;
-            if (playerCount === 0 && (now - (room.createdAt || 0) > 1800000)) {
-                updates['rooms/' + id] = null;
-                hasUpdates = true;
-            }
-            if (now - (room.createdAt || 0) > 21600000) {
+            
+            if ((now - (room.createdAt || 0)) > 21600000) {
                 updates['rooms/' + id] = null;
                 hasUpdates = true;
             }
@@ -1067,7 +1069,7 @@
         }
     }
     
-    // FIX: تصحيح مشكلة الانضمام للغرفة - تخزين بيانات الغرفة في الـ element نفسه
+    // FIX: تعديل دالة renderRoomsList - تخزين بيانات الغرفة
     function renderRoomsList(rooms, gameType) {
         const listId = getRoomsListId();
         const container = document.getElementById(listId);
@@ -1718,8 +1720,6 @@
                 
                 html += '<p>صوت لإعدام أحد اللاعبين</p>';
                 html += renderMafiaPlayerSelection(players, myPlayer, 'day_vote');
-                
-                // FIX: زر لإنهاء التصويت (للمضيف أو تلقائياً)
                 html += '<div class="mt-10"><button class="btn btn-primary" onclick="resolveMafiaVote()" style="padding:8px 20px;width:auto;">🗳️ إنهاء التصويت</button></div>';
             }
         }
@@ -1800,7 +1800,6 @@
             const players = room.players || {};
             const dayVotes = mafiaData.dayVotes || {};
             
-            // حساب الأصوات
             const voteCount = {};
             Object.values(dayVotes).forEach(targetId => {
                 if (targetId && players[targetId] && players[targetId].alive !== false) {
@@ -1830,7 +1829,6 @@
                 });
             }
             
-            // التحقق من نهاية اللعبة
             let alivePlayers = Object.entries(players).filter(([id, p]) => p.alive !== false);
             let aliveMafia = alivePlayers.filter(([id, p]) => p.role === 'mafia').length;
             let aliveCitizens = alivePlayers.filter(([id, p]) => p.role !== 'mafia').length;
@@ -1852,7 +1850,6 @@
                     time: Date.now()
                 });
             } else {
-                // بدء الليل الجديد
                 updates['rooms/' + state.currentRoomId + '/mafiaData/phase'] = 'night';
                 updates['rooms/' + state.currentRoomId + '/mafiaData/round'] = (mafiaData.round || 1) + 1;
                 updates['rooms/' + state.currentRoomId + '/mafiaData/dayVotes'] = {};
@@ -1865,7 +1862,6 @@
                     time: Date.now()
                 });
                 
-                // معالجة القتل الليلي بعد 30 ثانية
                 setTimeout(async () => {
                     await processMafiaNightKill(state.currentRoomId);
                 }, 30000);
@@ -1888,7 +1884,6 @@
             const nightActions = mafiaData.nightActions || {};
             const players = room.players || {};
             
-            // جمع أهداف القتل من المافيا
             let killTarget = null;
             let doctorSaveTarget = null;
             
@@ -1912,7 +1907,6 @@
                 updates['rooms/' + roomId + '/mafiaData/eliminatedTonight'] = null;
             }
             
-            // التحقق من نهاية اللعبة
             const alivePlayers = Object.entries(players).filter(([id, p]) => {
                 if (killTarget === id && killTarget !== doctorSaveTarget) return false;
                 return p.alive !== false;
@@ -2171,7 +2165,6 @@
                     const isRed = card.suit === '♥️' || card.suit === '♦️';
                     let canPlay = true;
                     
-                    // التحقق من إمكانية اللعب حسب القوانين
                     if (gameData.currentTrick.length > 0) {
                         const leadCard = gameData.currentTrick[0];
                         const hasSameSuit = myPlayer.hand.some(c => c.suit === leadCard.suit);
@@ -2273,7 +2266,6 @@
             
             if (!myPlayer || gameData.players[gameData.currentPlayerIndex]?.id !== state.playerId) return;
             
-            // التحقق من صحة الكرت
             if (gameData.currentTrick.length > 0) {
                 const leadCard = gameData.currentTrick[0];
                 const hasSameSuit = myPlayer.hand.some(c => c.suit === leadCard.suit);
@@ -2290,7 +2282,6 @@
             gameData.currentPlayerIndex = (gameData.currentPlayerIndex + 1) % 4;
             
             if (gameData.currentTrick.length === 4) {
-                // FIX: تحديد الفائز بالجولة حسب القوانين الصحيحة
                 let winningCard = gameData.currentTrick[0];
                 let winnerIndex = 0;
                 
@@ -2338,7 +2329,6 @@
                     gameData.phase = 'bidding';
                     gameData.currentBidderIndex = 0;
                     
-                    // إعادة توزيع الكروت
                     const allCards = [];
                     gameData.players.forEach(p => {
                         allCards.push(...p.hand);
@@ -2684,7 +2674,6 @@
                 }
             }
             
-            // معاقبة من نسي يقول UNO
             for (let p of gameData.players) {
                 if (p.id !== state.playerId && p.hand.length === 1 && !p.saidUno && p.connected) {
                     for (let i = 0; i < 2; i++) {
@@ -2715,6 +2704,7 @@
         }
     };
     
+    // FIX: تعديل دالة drawUno - منع السحب إذا عنده كرت يلعب
     window.drawUno = async function() {
         if (!state.currentRoomId) return;
         
@@ -2728,15 +2718,42 @@
             
             if (!myPlayer || gameData.players[gameData.currentPlayerIndex]?.id !== state.playerId) return;
             
+            const topCard = gameData.discardPile[gameData.discardPile.length - 1];
+            
+            // منع السحب إذا عنده كرت يصلح للعب
+            const hasPlayableCard = myPlayer.hand.some(card => canPlayUnoCard(card, topCard));
+            
+            if (hasPlayableCard) {
+                showToast('⚠️ عندك كرت يصلح للعب! ما تقدر تسحب', 'error');
+                return;
+            }
+            
             if (gameData.deck.length === 0) reshuffleUnoDeck(gameData);
             
             if (gameData.deck.length > 0) {
-                myPlayer.hand.push(gameData.deck.pop());
+                const drawnCard = gameData.deck.pop();
+                myPlayer.hand.push(drawnCard);
+                
+                await push(ref(db, 'rooms/' + state.currentRoomId + '/chat'), {
+                    type: 'system',
+                    text: state.playerName + ' سحب كرت واحد (ما كان عنده كرت يلعب)',
+                    time: Date.now()
+                });
+                
+                const newTopCard = gameData.discardPile[gameData.discardPile.length - 1];
+                const nowHasPlayable = myPlayer.hand.some(card => canPlayUnoCard(card, newTopCard));
+                
+                if (!nowHasPlayable) {
+                    gameData.currentPlayerIndex = getNextUnoPlayerIndex(gameData);
+                    await push(ref(db, 'rooms/' + state.currentRoomId + '/chat'), {
+                        type: 'system',
+                        text: state.playerName + ' سحب كرت وما زال ما عنده كرت يلعب - تم تمرير الدور',
+                        time: Date.now()
+                    });
+                }
             }
             
-            gameData.currentPlayerIndex = getNextUnoPlayerIndex(gameData);
             gameData.turnStartTime = Date.now();
-            
             await update(ref(db, 'rooms/' + state.currentRoomId + '/unoGame'), gameData);
             
         } catch (error) {
@@ -2847,40 +2864,44 @@
             state.isAdmin = true;
             localStorage.setItem('game_admin_auth', 'true');
             showToast('✅ مرحباً أيها المدير!');
-            navigateTo('admin');
+            showAdminPanel();
         } else if (password !== null) {
             showToast('❌ كلمة مرور خاطئة', 'error');
         }
     };
     
-    // FIX: إضافة صفحة admin لو لم تكن موجودة
-    if (!document.getElementById('adminPanelPage')) {
-        const adminPage = document.createElement('div');
-        adminPage.className = 'page';
-        adminPage.id = 'adminPanelPage';
-        adminPage.innerHTML = `
-            <div style="max-width:560px;margin:0 auto;padding:20px;width:100%;">
-                <div class="flex-between" style="margin-bottom:20px;">
-                    <div class="back-btn" onclick="navigateTo('menu')" style="position:static;">◀</div>
-                    <h2>👑 لوحة التحكم</h2>
-                    <button onclick="logoutAdmin()" style="background:transparent;border:1px solid var(--border-glass);padding:8px 16px;border-radius:25px;color:var(--text);cursor:pointer;">تسجيل خروج</button>
+    function showAdminPanel() {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        
+        let adminPage = document.getElementById('adminPanelPage');
+        if (!adminPage) {
+            adminPage = document.createElement('div');
+            adminPage.className = 'page';
+            adminPage.id = 'adminPanelPage';
+            adminPage.innerHTML = `
+                <div style="max-width:560px;margin:0 auto;padding:20px;width:100%;">
+                    <div class="flex-between" style="margin-bottom:20px;">
+                        <div class="back-btn" onclick="navigateTo('menu')" style="position:static;">◀</div>
+                        <h2>👑 لوحة التحكم</h2>
+                        <button onclick="logoutAdmin()" style="background:transparent;border:1px solid var(--border-glass);padding:8px 16px;border-radius:25px;color:var(--text);cursor:pointer;">تسجيل خروج</button>
+                    </div>
+                    <div id="adminStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-bottom:25px;"></div>
+                    <div class="flex-between" style="margin-bottom:15px;">
+                        <h3>📋 قائمة الغرف</h3>
+                        <button onclick="deleteAllRooms()" style="background:var(--red);border:none;padding:8px 16px;border-radius:20px;color:white;cursor:pointer;">🗑️ حذف الكل</button>
+                    </div>
+                    <div id="adminRoomsList"></div>
                 </div>
-                <div id="adminStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:12px;margin-bottom:25px;"></div>
-                <div class="flex-between" style="margin-bottom:15px;">
-                    <h3>📋 قائمة الغرف</h3>
-                    <button onclick="deleteAllRooms()" style="background:var(--red);border:none;padding:8px 16px;border-radius:20px;color:white;cursor:pointer;">🗑️ حذف الكل</button>
-                </div>
-                <div id="adminRoomsList"></div>
-            </div>
-        `;
-        document.body.appendChild(adminPage);
+            `;
+            document.body.appendChild(adminPage);
+        }
+        
+        adminPage.classList.add('active');
+        loadAdminPanel();
     }
     
     function loadAdminPanel() {
-        if (!state.isAdmin) {
-            navigateTo('menu');
-            return;
-        }
+        if (!state.isAdmin) return;
         
         const roomsRef = ref(db, 'rooms');
         
@@ -3043,9 +3064,6 @@
         document.getElementById('fabTarneeb')?.addEventListener('click', openCreateModal);
         document.getElementById('fabUno')?.addEventListener('click', openCreateModal);
         
-        document.getElementById('confirmCreateBtn')?.addEventListener('click', createRoom);
-        document.getElementById('cancelCreateBtn')?.addEventListener('click', closeAllModals);
-        
         document.getElementById('isPrivateToggle')?.addEventListener('change', function() {
             const pwGroup = document.getElementById('passwordGroup');
             if (this.checked) {
@@ -3054,12 +3072,6 @@
                 pwGroup?.classList.add('hidden');
             }
         });
-        
-        document.getElementById('confirmPasswordBtn')?.addEventListener('click', checkPassword);
-        document.getElementById('cancelPasswordBtn')?.addEventListener('click', closeAllModals);
-        
-        document.getElementById('confirmJoinBtn')?.addEventListener('click', joinRoom);
-        document.getElementById('cancelJoinBtn')?.addEventListener('click', closeAllModals);
         
         document.getElementById('lobbyBack')?.addEventListener('click', leaveRoom);
         
@@ -3126,25 +3138,13 @@
     
     window.addEventListener('error', function(e) {
         console.error('❌ خطأ عام:', e.message);
-        console.error('📍 الملف:', e.filename, 'السطر:', e.lineno);
     });
     
     window.addEventListener('unhandledrejection', function(e) {
         console.error('❌ خطأ غير معالج:', e.reason);
     });
     
-    window.addEventListener('online', function() {
-        console.log('🌐 تم استعادة الاتصال');
-        updateOnlineCounter();
-    });
-    
-    window.addEventListener('offline', function() {
-        console.warn('⚠️ تم فقدان الاتصال');
-    });
-    
     console.log('🎮 مركز الألعاب v5.0 جاهز!');
-    console.log('📦 الإصدار: 5.0.0');
-    console.log('✅ جميع الأنظمة شغالة');
 </script>
 </body>
 </html>
