@@ -3,236 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>مركز الألعاب | مافيا - طرنيب</title>
+    <meta name="theme-color" content="#0a0a12">
+    <title>مركز الألعاب | طرنيب - مافيا</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Cairo', sans-serif;
             background: #0a0a18;
-            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.1) 0%, transparent 60%),
-                              radial-gradient(ellipse at 80% 70%, rgba(212,175,55,0.05) 0%, transparent 60%);
+            background-image: radial-gradient(ellipse at 20% 30%, rgba(139,92,246,0.08) 0%, transparent 60%);
             color: #f1f5f9;
             min-height: 100vh;
         }
-        
-        /* تحسين المظهر */
         .page { display: none; max-width: 560px; margin: 0 auto; padding: 20px; min-height: 100vh; }
         .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* بطاقات الألعاب */
         .game-card {
-            background: linear-gradient(135deg, rgba(18,18,35,0.95), rgba(25,25,48,0.9));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 28px;
-            padding: 22px 20px;
-            margin-bottom: 18px;
+            background: rgba(18, 18, 35, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+            transition: 0.3s;
             display: flex;
             align-items: center;
-            gap: 18px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            gap: 16px;
         }
-        .game-card:hover { transform: translateY(-5px) scale(1.01); border-color: rgba(139,92,246,0.5); box-shadow: 0 15px 35px rgba(139,92,246,0.2); }
-        .game-icon { font-size: 2.8rem; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); }
-        .game-name { font-weight: 900; font-size: 1.4rem; letter-spacing: -0.5px; }
-        .game-desc { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
+        .game-card:hover { background: rgba(25,25,48,0.95); transform: translateY(-4px); border-color: rgba(255,255,255,0.18); }
+        .game-icon { font-size: 2.5rem; }
+        .game-name { font-weight: 900; font-size: 1.3rem; }
+        .game-desc { font-size: 0.8rem; color: #94a3b8; }
         
-        /* بطاقات الغرف */
         .room-card {
-            background: rgba(18,18,35,0.9);
+            background: rgba(18, 18, 35, 0.85);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 20px;
-            padding: 16px 20px;
-            margin-bottom: 12px;
+            border-radius: 18px;
+            padding: 15px;
+            margin-bottom: 10px;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.25s ease;
-            backdrop-filter: blur(5px);
+            transition: 0.3s;
         }
-        .room-card:hover { background: rgba(35,35,55,0.95); transform: translateX(-6px); border-color: #8b5cf6; }
+        .room-card:hover { background: rgba(25,25,48,0.95); transform: translateX(-5px); }
         
-        /* أزرار */
         button {
             background: linear-gradient(135deg, #8b5cf6, #6d28d9);
             border: none;
-            padding: 12px 24px;
-            border-radius: 40px;
+            padding: 12px 20px;
+            border-radius: 30px;
             color: white;
             font-family: 'Cairo', sans-serif;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.25s ease;
-            font-size: 1rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: 0.3s;
         }
-        button:hover { transform: scale(1.02); filter: brightness(1.05); box-shadow: 0 6px 18px rgba(139,92,246,0.4); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        button:hover { transform: scale(1.02); opacity: 0.9; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         
         .back-btn {
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(5px);
-            margin-bottom: 18px;
-            padding: 10px 20px;
-            font-size: 0.9rem;
+            background: rgba(255,255,255,0.05);
+            display: inline-block;
+            margin-bottom: 15px;
         }
         
-        /* اللاعبين */
-        .players-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 20px 0; justify-content: center; }
+        .players-container { display: flex; flex-wrap: wrap; gap: 12px; margin: 15px 0; justify-content: center; }
         .player-badge {
-            background: linear-gradient(135deg, #1e1e2e, #16162a);
-            border-radius: 60px;
-            padding: 8px 20px;
+            background: #1e1e2e;
+            border-radius: 50px;
+            padding: 8px 18px;
             border: 1px solid #334155;
-            font-weight: 600;
-            transition: 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-        .player-badge.host { border-color: #d4af37; background: linear-gradient(135deg, #2a2a3a, #1a1a2a); }
-        .player-badge.self { border-color: #8b5cf6; background: linear-gradient(135deg, #2d2d4a, #1a1a35); }
+        .player-badge.host { border-color: #d4af37; }
+        .player-badge.self { border-color: #8b5cf6; }
+        .player-badge.dead { opacity: 0.5; text-decoration: line-through; }
         
-        /* شات */
         .chat-box {
-            background: rgba(10,10,24,0.85);
-            backdrop-filter: blur(10px);
+            background: rgba(10,10,24,0.78);
             border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 24px;
-            height: 260px;
+            border-radius: 18px;
+            height: 200px;
             overflow-y: auto;
-            padding: 15px;
+            padding: 12px;
             margin: 15px 0;
         }
-        .chat-msg { padding: 8px 14px; margin: 6px 0; border-radius: 20px; max-width: 85%; word-break: break-word; }
-        .chat-msg.own { background: linear-gradient(135deg, rgba(139,92,246,0.25), rgba(109,40,217,0.25)); align-self: flex-end; text-align: right; margin-right: auto; border-right: 2px solid #8b5cf6; }
-        .chat-msg.other { background: rgba(255,255,255,0.07); align-self: flex-start; border-left: 2px solid #d4af37; }
-        .chat-msg.system { text-align: center; color: #94a3b8; font-size: 0.75rem; max-width: 100%; background: none; }
+        .chat-msg { padding: 6px 12px; margin: 4px 0; border-radius: 16px; max-width: 80%; }
+        .chat-msg.own { background: rgba(139,92,246,0.2); align-self: flex-end; text-align: right; margin-right: auto; }
+        .chat-msg.other { background: rgba(255,255,255,0.05); }
+        .chat-msg.system { text-align: center; color: #94a3b8; font-size: 0.75rem; max-width: 100%; }
         
-        /* كروت اللعب */
         .card {
-            background: linear-gradient(145deg, #1e1e30, #141428);
-            border-radius: 14px;
-            padding: 14px 18px;
-            margin: 6px;
+            background: linear-gradient(145deg, #1e1e2e, #161622);
+            border-radius: 12px;
+            padding: 12px;
+            margin: 5px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
-            font-size: 1.2rem;
+            min-width: 55px;
+            min-height: 75px;
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+            transition: 0.2s;
             border: 1px solid #334155;
-            min-width: 60px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-weight: bold;
+            font-size: 1.2rem;
         }
-        .card:hover { transform: translateY(-8px) scale(1.08); background: #2d2d48; border-color: #8b5cf6; }
+        .card:hover { transform: translateY(-8px); background: #2d2d3e; border-color: #d4af37; }
+        .card.playable { border: 2px solid #10b981; }
+        .card.not-playable { opacity: 0.4; cursor: not-allowed; }
         
-        /* نماذج */
         .modal {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             display: none; align-items: center; justify-content: center; z-index: 1000;
         }
-        .modal.active { display: flex; animation: fadeIn 0.2s; }
-        .modal-content { background: linear-gradient(145deg, #121228, #0a0a18); border-radius: 40px; padding: 28px; width: 90%; max-width: 380px; border: 1px solid #334155; text-align: center; }
-        .modal-content input { width: 100%; padding: 12px; margin: 15px 0; border-radius: 30px; background: #1e1e2e; border: 1px solid #334155; color: white; font-size: 1rem; }
+        .modal.active { display: flex; }
+        .modal-content { background: #0f0f1a; border-radius: 32px; padding: 24px; width: 90%; max-width: 400px; border: 1px solid #334155; }
         
-        /* زر الإضافة */
         .fab {
             position: fixed; bottom: 30px; left: 30px;
-            width: 60px; height: 60px; border-radius: 50%;
+            width: 56px; height: 56px; border-radius: 50%;
             background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-            font-size: 2rem;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            z-index: 100;
+            font-size: 1.8rem;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         }
-        .fab:hover { transform: scale(1.1) rotate(90deg); background: linear-gradient(135deg, #9b6ef6, #7d38e9); }
         
-        @media (max-width: 480px) { .page { padding: 15px; } .game-card { padding: 15px; } .card { padding: 10px 14px; min-width: 50px; } }
+        .bid-btn { padding: 10px 18px; margin: 4px; font-size: 1rem; background: #2d2d3e; }
+        .bid-btn.selected { background: #d4af37; color: #000; }
         
-        .text-gold { color: #d4af37; }
-        .text-purple { color: #8b5cf6; }
-        .text-muted { color: #64748b; }
+        @media (max-width: 480px) { .page { padding: 12px; } .game-card { padding: 14px; } .card { min-width: 45px; min-height: 65px; font-size: 1rem; } }
     </style>
 </head>
 <body>
 
-<!-- القائمة الرئيسية -->
+<!-- ========== القائمة الرئيسية ========== -->
 <div class="page active" id="menuPage">
-    <div style="text-align: center; margin-bottom: 40px;">
-        <h1 style="font-size: 3rem; background: linear-gradient(135deg,#fbbf24,#d4af37,#b8860b); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">🎮 مركز الألعاب</h1>
-        <p style="color:#64748b; letter-spacing: 3px;">GAME CENTER</p>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="font-size: 2.8rem; background: linear-gradient(135deg,#fbbf24,#d4af37); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">🎮 مركز الألعاب</h1>
+        <p style="color:#64748b;">GAME CENTER</p>
+    </div>
+    <div class="game-card" onclick="openGame('tarneeb')">
+        <div class="game-icon">♠️</div>
+        <div><div class="game-name">طرنيب</div><div class="game-desc">لعبة الورق العربية - 4 لاعبين</div></div>
     </div>
     <div class="game-card" onclick="openGame('mafia')">
         <div class="game-icon">🕵️‍♂️</div>
         <div><div class="game-name">مافيا</div><div class="game-desc">لعبة الاستنتاج الاجتماعي - 4-16 لاعب</div></div>
     </div>
-    <div class="game-card" onclick="openGame('tarneeb')">
-        <div class="game-icon">♠️</div>
-        <div><div class="game-name">طرنيب</div><div class="game-desc">لعبة الورق العربية - 4 لاعبين (2 ضد 2)</div></div>
-    </div>
-    <button onclick="promptAdmin()" style="width:100%; margin-top:25px; background:transparent; border:1px dashed #64748b; box-shadow:none;">🔐 لوحة المدير</button>
+    <button onclick="promptAdmin()" style="margin-top:20px; background:transparent; border:1px dashed #64748b; width:100%;">🔐 لوحة المدير</button>
 </div>
 
-<!-- صفحة الغرف -->
+<!-- ========== صفحة الغرف ========== -->
 <div class="page" id="roomsPage">
     <button class="back-btn" onclick="navigateTo('menu')">◀ رجوع</button>
-    <h2 id="roomsTitle">غرف المافيا</h2>
-    <div id="roomsList" style="margin: 20px 0;"></div>
+    <h2 id="roomsTitle">غرف الطرنيب</h2>
+    <div id="roomsList" style="margin: 15px 0;"></div>
     <button id="createRoomBtn" style="width:100%;">+ إنشاء غرفة جديدة</button>
 </div>
 
-<!-- صفحة اللوبي -->
+<!-- ========== صفحة اللوبي ========== -->
 <div class="page" id="lobbyPage">
-    <button class="back-btn" id="lobbyBackBtn">◀ مغادرة</button>
+    <button class="back-btn" id="lobbyBackBtn">◀ خروج</button>
     <h2 id="lobbyRoomName">الغرفة</h2>
     <div class="players-container" id="playersContainer"></div>
     <div class="chat-box" id="chatMessages"></div>
-    <div style="display:flex; gap:12px;">
-        <input type="text" id="chatInput" placeholder="اكتب رسالة..." style="flex:1; padding:14px; border-radius:40px; background:#1e1e2e; border:1px solid #334155; color:white; font-family:inherit;">
-        <button onclick="sendMessage()" style="padding:12px 20px;">إرسال</button>
+    <div style="display:flex; gap:10px;">
+        <input type="text" id="chatInput" placeholder="اكتب رسالة..." style="flex:1; padding:12px; border-radius:30px; background:#1e1e2e; border:1px solid #334155; color:white;">
+        <button onclick="sendMessage()">إرسال</button>
     </div>
-    <div id="gameActions" style="margin-top:20px;"></div>
+    <div id="gameActions" style="margin-top:15px;"></div>
 </div>
 
-<!-- صفحة الطرنيب -->
+<!-- ========== صفحة لعبة الطرنيب ========== -->
 <div class="page" id="tarneebGamePage">
     <button class="back-btn" onclick="leaveRoom()">◀ خروج</button>
     <h2>♠️ طرنيب</h2>
-    <div style="display:flex; justify-content:space-between; gap:15px; margin:15px 0;">
-        <div style="background:linear-gradient(145deg,#1e1e2e,#141428); padding:18px; border-radius:24px; text-align:center; flex:1;"><div style="color:#d4af37; font-size:2rem;" id="team1Score">0</div><div>فريق 1</div></div>
-        <div style="background:linear-gradient(145deg,#1e1e2e,#141428); padding:18px; border-radius:24px; text-align:center; flex:1;"><div style="color:#d4af37; font-size:2rem;" id="team2Score">0</div><div>فريق 2</div></div>
+    <div style="display:flex; justify-content:space-between; margin:10px 0;">
+        <div style="background:#1e1e2e; padding:15px; border-radius:16px; text-align:center; width:45%;"><div style="color:#d4af37; font-size:1.8rem;" id="team1Score">0</div><div>فريق 1</div></div>
+        <div style="background:#1e1e2e; padding:15px; border-radius:16px; text-align:center; width:45%;"><div style="color:#d4af37; font-size:1.8rem;" id="team2Score">0</div><div>فريق 2</div></div>
     </div>
-    <div id="tarneebInfo" style="background:#00000040; padding:10px; border-radius:20px; text-align:center; margin:10px 0;"></div>
+    <div id="tarneebInfo" style="background:#00000030; padding:8px; border-radius:12px; text-align:center; margin:10px 0;"></div>
+    
+    <!-- مرحلة الطلب -->
     <div id="biddingArea" style="text-align:center; margin:10px 0;"></div>
+    <div id="biddingStatus" style="text-align:center; margin:10px 0; font-size:0.9rem; color:#d4af37;"></div>
+    
+    <!-- مرحلة اختيار الطرنيب (فقط المنشئ) -->
     <div id="trumpSelectArea" style="text-align:center; margin:10px 0; display:none;"></div>
-    <div id="tableCards" style="display:flex; justify-content:center; gap:12px; min-height:100px; margin:15px 0; flex-wrap:wrap;"></div>
-    <div id="turnIndicator" style="text-align:center; padding:10px; background:#00000030; border-radius:30px; margin:10px 0;"></div>
-    <div id="playerHand" style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:15px;"></div>
+    
+    <!-- مرحلة اللعب -->
+    <div id="tableCards" style="display:flex; justify-content:center; gap:10px; min-height:90px; margin:10px 0;"></div>
+    <div id="turnIndicator" style="text-align:center; padding:8px; background:#00000030; border-radius:20px; margin:5px 0;"></div>
+    <div id="playerHand" style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-top:10px;"></div>
 </div>
 
-<!-- صفحة المافيا -->
+<!-- ========== صفحة لعبة المافيا ========== -->
 <div class="page" id="mafiaGamePage">
     <button class="back-btn" onclick="leaveRoom()">◀ خروج</button>
     <h2>🕵️ مافيا</h2>
-    <div id="mafiaRoleDisplay" style="background:linear-gradient(145deg,#1e1e2e,#141428); padding:20px; border-radius:30px; text-align:center; margin:15px 0;"></div>
+    <div id="mafiaRoleDisplay" style="background:#1e1e2e; padding:15px; border-radius:20px; text-align:center; margin:10px 0;"></div>
     <div id="mafiaPlayersList" class="players-container"></div>
-    <div id="mafiaNightResult" style="background:#00000040; border-radius:20px; padding:12px; margin:10px 0; text-align:center;"></div>
     <div id="mafiaActions" style="margin-top:15px;"></div>
+    <div id="mafiaNightResult" style="text-align:center; margin:10px 0; color:#ef4444;"></div>
 </div>
 
-<!-- نماذج -->
-<div class="modal" id="passwordModal"><div class="modal-content"><h3>🔒 غرفة خاصة</h3><input type="password" id="roomPasswordInput" placeholder="كلمة المرور"><button onclick="checkPassword()">دخول</button><button onclick="closeModal('passwordModal')">إلغاء</button></div></div>
-<div class="modal" id="nameModal"><div class="modal-content"><h3>👤 ادخل اسمك</h3><input type="text" id="playerNameInput" placeholder="اسمك"><button onclick="confirmJoin()">دخول</button><button onclick="closeModal('nameModal')">إلغاء</button></div></div>
-<div class="fab" id="fabBtn" style="display:none;">+</div>
+<!-- ========== نماذج الدخول ========== -->
+<div class="modal" id="passwordModal"><div class="modal-content"><h3>🔒 غرفة خاصة</h3><input type="password" id="roomPasswordInput" placeholder="كلمة المرور" style="width:100%; padding:10px; margin:10px 0;"><button onclick="checkPassword()">دخول</button><button onclick="closeModal('passwordModal')">إلغاء</button></div></div>
+<div class="modal" id="nameModal"><div class="modal-content"><h3>👤 اسمك</h3><input type="text" id="playerNameInput" placeholder="اسمك" style="width:100%; padding:10px; margin:10px 0;"><button onclick="confirmJoin()">دخول</button><button onclick="closeModal('nameModal')">إلغاء</button></div></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -247,7 +227,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // الحالة العامة
+    // ========== الحالة العامة ==========
     let state = {
         currentGame: null, roomId: null, playerId: null, playerName: null, isHost: false,
         pendingRoomId: null, pendingIsPrivate: false, pendingPassword: null
@@ -259,7 +239,7 @@
     function generateId() { return Date.now().toString(36)+'_'+Math.random().toString(36).substr(2,6); }
     function escapeHTML(str) { return str?.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}) || ''; }
 
-    // التنقل
+    // ========== التنقل ==========
     window.navigateTo = function(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         if (page === 'menu') document.getElementById('menuPage').classList.add('active');
@@ -272,19 +252,18 @@
     window.openGame = function(game) {
         state.currentGame = game;
         document.getElementById('roomsTitle').innerText = game === 'mafia' ? '🕵️ غرف المافيا' : '♠️ غرف الطرنيب';
-        document.getElementById('fabBtn').style.display = 'flex';
         navigateTo('rooms');
         loadRooms();
     };
 
-    // تحميل الغرف
+    // ========== تحميل وعرض الغرف ==========
     async function loadRooms() {
         if (roomsListener) roomsListener();
         roomsListener = onValue(ref(db, 'rooms'), (snap) => {
             const allRooms = snap.val() || {};
             const filtered = Object.entries(allRooms).filter(([id, r]) => r.game === state.currentGame && r.phase === 'lobby');
             const container = document.getElementById('roomsList');
-            if (filtered.length === 0) { container.innerHTML = '<div style="text-align:center;padding:60px;color:#64748b;">📭 لا توجد غرف<br>اضغط + لإنشاء غرفة</div>'; return; }
+            if (filtered.length === 0) { container.innerHTML = '<div style="text-align:center;padding:50px;color:#64748b;">📭 لا توجد غرف<br>اضغط + لإنشاء غرفة</div>'; return; }
             container.innerHTML = filtered.map(([id, r]) => {
                 const playerCount = Object.keys(r.players || {}).length;
                 const max = r.game === 'tarneeb' ? 4 : 16;
@@ -321,7 +300,7 @@
         const max = room.game === 'tarneeb' ? 4 : 16;
         if (Object.keys(room.players||{}).length >= max) { showToast('الغرفة ممتلئة', true); return; }
         state.roomId = roomId; state.playerName = playerName; state.currentGame = room.game;
-        state.playerId = generateId(); state.isHost = false;
+        state.playerId = generateId();
         await update(ref(db, 'rooms/'+roomId+'/players/'+state.playerId), { name: playerName, host: false, alive: true });
         onDisconnect(ref(db, 'rooms/'+roomId+'/players/'+state.playerId)).remove();
         await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:playerName+' انضم للغرفة', time:Date.now() });
@@ -331,13 +310,12 @@
         startChatListener();
     }
 
-    // إنشاء غرفة (مع خيار عام/خاص)
     window.createRoom = async function() {
         let roomName = prompt('اسم الغرفة:');
         if (!roomName) return;
         let playerName = prompt('اسمك:');
         if (!playerName) return;
-        let isPrivate = confirm('هل تريد غرفة خاصة؟\n"موافق" = خاصة\n"إلغاء" = عامة');
+        let isPrivate = confirm('غرفة خاصة؟');
         let password = isPrivate ? prompt('كلمة المرور:') : null;
         if (isPrivate && !password) return;
         let roomId = generateId();
@@ -357,9 +335,8 @@
         startChatListener();
     };
     document.getElementById('createRoomBtn').onclick = createRoom;
-    document.getElementById('fabBtn').onclick = createRoom;
 
-    // مستمعي اللوبي
+    // ========== مستمعي الغرفة والمحادثة ==========
     function startRoomListener() {
         if (roomListener) roomListener();
         roomListener = onValue(ref(db, 'rooms/'+state.roomId), (snap) => {
@@ -367,14 +344,15 @@
             if (!room) { leaveRoom(); return; }
             document.getElementById('lobbyRoomName').innerText = room.name;
             const players = room.players || {};
-            document.getElementById('playersContainer').innerHTML = Object.keys(players).map(id => `<div class="player-badge ${players[id].host?'host':''} ${id===state.playerId?'self':''}">${escapeHTML(players[id].name)}${players[id].host?'👑':''}</div>`).join('');
+            document.getElementById('playersContainer').innerHTML = Object.keys(players).map(id => `<div class="player-badge ${players[id].host?'host':''} ${id===state.playerId?'self':''} ${!players[id].alive?'dead':''}">${escapeHTML(players[id].name)}${players[id].host?'👑':''}</div>`).join('');
+            
             const minPlayers = room.game === 'tarneeb' ? 4 : 4;
-            const canStart = Object.keys(players).length >= minPlayers;
-            if (state.isHost && room.phase === 'lobby') {
-                document.getElementById('gameActions').innerHTML = `<button id="startGameBtn" style="width:100%;" ${!canStart?'disabled':''}>🎮 ${canStart?'ابدأ اللعبة':'انتظر اكتمال اللاعبين'}</button>`;
-                document.getElementById('startGameBtn')?.addEventListener('click', startGame);
+            const canStart = state.isHost && room.phase === 'lobby' && Object.keys(players).length >= minPlayers;
+            if (canStart) {
+                document.getElementById('gameActions').innerHTML = '<button id="startGameBtn" style="width:100%;">🎮 ابدأ اللعبة</button>';
+                document.getElementById('startGameBtn').onclick = () => startGame();
             } else if (!state.isHost && room.phase === 'lobby') {
-                document.getElementById('gameActions').innerHTML = '<div style="text-align:center;color:#64748b;">⏳ في انتظار المضيف...</div>';
+                document.getElementById('gameActions').innerHTML = '<div style="text-align:center;color:#64748b;">⏳ في انتظار المضيف (يحتاج 4 لاعبين)...</div>';
             }
             if (room.phase === 'tarneeb-playing') { navigateTo('tarneebGame'); startTarneebListener(); }
             if (room.phase === 'mafia-playing') { navigateTo('mafiaGame'); startMafiaListener(); }
@@ -394,35 +372,60 @@
         });
     }
     window.sendMessage = async function() {
-        let text = document.getElementById('chatInput').value.trim();
+        let text = document.getElementById('chatInput').value;
         if (!text) return;
         await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'user', senderName:state.playerName, senderId:state.playerId, text:text, time:Date.now() });
         document.getElementById('chatInput').value = '';
     };
 
+    // ========== بدء اللعبة ==========
     async function startGame() {
         if (!state.isHost) return;
         if (state.currentGame === 'tarneeb') await startTarneebGame();
         else if (state.currentGame === 'mafia') await startMafiaGame();
     }
 
-    // ========== الطرنيب ==========
-    const SUITS = ['♥️','♦️','♣️','♠️']; const RANKS = ['1','2','3','4','5','6','7','8','9','10','J','Q','K'];
+    // ==================== لعبة الطرنيب ====================
+    const SUITS = ['♥️','♦️','♣️','♠️'];
+    const RANKS = ['1','2','3','4','5','6','7','8','9','10','J','Q','K'];
     const VALUES = { '1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9,'10':10,'J':11,'Q':12,'K':13 };
-    function createDeck() { let deck=[]; SUITS.forEach(s=>RANKS.forEach(r=>deck.push({suit:s,rank:r,value:VALUES[r]}))); for(let i=deck.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];} return deck; }
-    function getCardValue(card, trump) { return card.value + (card.suit===trump?100:0); }
+    
+    function createDeck() {
+        let deck = [];
+        SUITS.forEach(s => RANKS.forEach(r => deck.push({ suit: s, rank: r, value: VALUES[r] })));
+        for (let i = deck.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+        return deck;
+    }
+    
+    function getCardValue(card, trump) { return card.value + (card.suit === trump ? 100 : 0); }
 
     async function startTarneebGame() {
         const roomSnap = await get(ref(db, 'rooms/'+state.roomId));
         const room = roomSnap.val();
         const playerIds = Object.keys(room.players);
+        
+        const players = playerIds.map((id, idx) => ({
+            id, name: room.players[id].name,
+            hand: [], team: idx % 2 === 0 ? 1 : 2
+        }));
+        
         const deck = createDeck();
-        let players = playerIds.map((id,i) => ({ id, name: room.players[id].name, hand: [], team: i%2===0?1:2 }));
-        players.forEach(p => { p.hand = deck.splice(0,13); });
+        players.forEach(p => { p.hand = deck.splice(0, 13); });
+        
         const gameData = {
-            players, phase: 'bidding', currentBidder: 0, highestBid: 0, highestBidder: null, trump: null,
-            currentTrick: [], currentPlayer: null, tricks: {1:0,2:0}, scores: {1:0,2:0}, round:1
+            players,
+            phase: 'bidding',
+            bids: {},
+            totalBids: 0,
+            trump: null,
+            trumpChooser: null,
+            currentTrick: [],
+            currentPlayer: null,
+            tricks: { 1: 0, 2: 0 },
+            scores: { 1: 0, 2: 0 },
+            round: 1
         };
+        
         await update(ref(db, 'rooms/'+state.roomId), { phase: 'tarneeb-playing', tarneebGame: gameData });
     }
 
@@ -431,110 +434,195 @@
             const room = snap.val();
             if (!room?.tarneebGame) return;
             const g = room.tarneebGame;
-            const myPlayer = g.players.find(p=>p.id===state.playerId);
+            const myPlayer = g.players.find(p => p.id === state.playerId);
+            if (!myPlayer) return;
+            
             document.getElementById('team1Score').innerText = g.scores[1];
             document.getElementById('team2Score').innerText = g.scores[2];
+            
             if (g.phase === 'bidding') {
-                const isMyTurn = g.players[g.currentBidder]?.id === state.playerId;
-                document.getElementById('biddingArea').innerHTML = isMyTurn ? `<div><p>طلبك (أعلى طلب:${g.highestBid})</p>${Array.from({length:7},(_,i)=>i+7).map(b=>b>g.highestBid?`<button onclick="makeBid(${b})" class="card">${b}</button>`:'').join('')}<button onclick="makeBid(0)" class="card">😴 بس</button></div>` : `<div style="text-align:center">⏳ ${escapeHTML(g.players[g.currentBidder]?.name)} يطلب...</div>`;
+                document.getElementById('biddingArea').style.display = 'block';
                 document.getElementById('trumpSelectArea').style.display = 'none';
-            } else if (g.phase === 'trump-select') {
-                document.getElementById('biddingArea').innerHTML = '';
+                
+                const myBid = g.bids[state.playerId];
+                const allBids = Object.values(g.bids);
+                const allBidCount = Object.keys(g.bids).length;
+                
+                if (!myBid) {
+                    let bidsHtml = '<p>🎯 اختر طلبك (2-14):</p><div>';
+                    for (let i = 2; i <= 14; i++) {
+                        bidsHtml += `<button class="bid-btn" onclick="submitBid(${i})">${i}</button>`;
+                    }
+                    bidsHtml += '</div>';
+                    document.getElementById('biddingArea').innerHTML = bidsHtml;
+                } else {
+                    document.getElementById('biddingArea').innerHTML = `<p>✅ طلبت: ${myBid}</p><p>⏳ في انتظار بقية اللاعبين...</p>`;
+                }
+                
+                const totalSoFar = allBids.reduce((a,b) => a + b, 0);
+                document.getElementById('biddingStatus').innerHTML = `الطلبات: ${allBidCount}/4 لاعبين طلبوا | المجموع: ${totalSoFar}`;
+                
+                if (allBidCount === 4) {
+                    const totalBids = totalSoFar;
+                    if (totalBids >= 12) {
+                        document.getElementById('biddingStatus').innerHTML = `✅ مجموع الطلبات: ${totalBids} (12+) → المنشئ يختار الطرنيب`;
+                        g.phase = 'trump-select';
+                        g.totalBids = totalBids;
+                        g.trumpChooser = room.hostId;
+                        update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
+                    } else {
+                        document.getElementById('biddingStatus').innerHTML = `⚠️ مجموع الطلبات: ${totalBids} (أقل من 12) → اللعب بدون طرنيب`;
+                        g.phase = 'playing';
+                        g.totalBids = totalBids;
+                        g.currentPlayer = g.players[0].id;
+                        update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
+                    }
+                }
+            }
+            else if (g.phase === 'trump-select') {
+                document.getElementById('biddingArea').style.display = 'none';
                 document.getElementById('trumpSelectArea').style.display = 'block';
-                if (g.highestBidder === state.playerId) {
-                    document.getElementById('trumpSelectArea').innerHTML = `<p>اختر الطرنيب:</p>${SUITS.map(s=>`<button onclick="selectTrump('${s}')" class="card">${s}</button>`).join('')}`;
-                } else { document.getElementById('trumpSelectArea').innerHTML = `<div style="text-align:center">⏳ اختيار الطرنيب...</div>`; }
-            } else if (g.phase === 'playing') {
-                document.getElementById('biddingArea').innerHTML = ''; document.getElementById('trumpSelectArea').style.display = 'none';
-                document.getElementById('tarneebInfo').innerHTML = `طرنيب: ${g.trump || '?'} | الطلب: ${g.highestBid} | الجولة: ${g.round}`;
+                
+                if (g.trumpChooser === state.playerId) {
+                    document.getElementById('trumpSelectArea').innerHTML = `<p>🎯 أنت المنشئ، اختر الطرنيب:</p>
+                        ${SUITS.map(s => `<button class="card" onclick="selectTrump('${s}')">${s}</button>`).join('')}`;
+                } else {
+                    document.getElementById('trumpSelectArea').innerHTML = `<p style="text-align:center">⏳ جاري اختيار الطرنيب...</p>`;
+                }
+            }
+            else if (g.phase === 'playing') {
+                document.getElementById('biddingArea').style.display = 'none';
+                document.getElementById('trumpSelectArea').style.display = 'none';
+                document.getElementById('tarneebInfo').innerHTML = `طرنيب: ${g.trump || 'لا يوجد'} | الجولة: ${g.round} | الطلب الكلي: ${g.totalBids}`;
+                
                 const isMyTurn = g.currentPlayer === state.playerId;
-                document.getElementById('turnIndicator').innerHTML = isMyTurn ? '🎯 دورك!' : `⏳ دور ${escapeHTML(g.players.find(p=>p.id===g.currentPlayer)?.name)}`;
-                document.getElementById('tableCards').innerHTML = g.currentTrick.map(c => `<div class="card" style="background:#2d2d3e;">${c.rank}${c.suit}</div>`).join('');
-                const myHand = myPlayer.hand;
-                let leadSuit = g.currentTrick[0]?.suit;
-                let hasLead = leadSuit ? myHand.some(c=>c.suit===leadSuit) : true;
-                document.getElementById('playerHand').innerHTML = myHand.map((c,i) => `<div class="card" onclick="playCard(${i})" style="${(!hasLead && c.suit!==leadSuit)||(hasLead && leadSuit && c.suit!==leadSuit && myHand.some(c2=>c2.suit===leadSuit))?'opacity:0.5;cursor:not-allowed':''}">${c.rank}${c.suit}</div>`).join('');
+                document.getElementById('turnIndicator').innerHTML = isMyTurn ? '🎯 دورك!' : `⏳ دور ${escapeHTML(g.players.find(p => p.id === g.currentPlayer)?.name)}`;
+                
+                document.getElementById('tableCards').innerHTML = g.currentTrick.map(c => `<div class="card" style="background:#2d2d3e">${c.rank}${c.suit}</div>`).join('');
+                
+                const leadCard = g.currentTrick[0];
+                const leadSuit = leadCard?.suit;
+                const hasLeadSuit = leadSuit ? myPlayer.hand.some(c => c.suit === leadSuit) : true;
+                
+                document.getElementById('playerHand').innerHTML = myPlayer.hand.map((c, idx) => {
+                    let canPlay = true;
+                    if (leadSuit && hasLeadSuit && c.suit !== leadSuit) canPlay = false;
+                    return `<div class="card ${canPlay ? 'playable' : 'not-playable'}" onclick="${canPlay ? `playCard(${idx})` : ''}">${c.rank}${c.suit}</div>`;
+                }).join('');
             }
         });
     }
-    window.makeBid = async function(bid) {
+    
+    window.submitBid = async function(bid) {
         const snap = await get(ref(db, 'rooms/'+state.roomId));
         let g = snap.val().tarneebGame;
-        if (g.players[g.currentBidder]?.id !== state.playerId) return;
-        if (bid > g.highestBid) { g.highestBid = bid; g.highestBidder = state.playerId; }
-        g.currentBidder = (g.currentBidder+1) % 4;
-        if (g.highestBidder && g.players[g.currentBidder]?.id === g.highestBidder && bid===0) g.phase = 'trump-select';
-        if (g.highestBid===0 && g.currentBidder===0) { g.highestBid=7; g.highestBidder=g.players[0].id; g.phase='trump-select'; }
+        if (g.phase !== 'bidding') return;
+        if (g.bids[state.playerId]) return;
+        g.bids[state.playerId] = bid;
         await update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
     };
+    
     window.selectTrump = async function(suit) {
         const snap = await get(ref(db, 'rooms/'+state.roomId));
         let g = snap.val().tarneebGame;
-        if (g.highestBidder !== state.playerId) return;
-        g.trump = suit; g.phase = 'playing'; g.currentPlayer = g.highestBidder;
+        if (g.phase !== 'trump-select' || g.trumpChooser !== state.playerId) return;
+        g.trump = suit;
+        g.phase = 'playing';
+        g.currentPlayer = g.players[0].id;
         await update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
     };
+    
     window.playCard = async function(index) {
         const snap = await get(ref(db, 'rooms/'+state.roomId));
         let g = snap.val().tarneebGame;
-        if (g.currentPlayer !== state.playerId) return;
-        let myPlayer = g.players.find(p=>p.id===state.playerId);
-        let leadSuit = g.currentTrick[0]?.suit;
-        let hasLead = leadSuit ? myPlayer.hand.some(c=>c.suit===leadSuit) : true;
-        let card = myPlayer.hand[index];
-        if (leadSuit && hasLead && card.suit !== leadSuit) { showToast('⚠️ يجب اتباع النوع', true); return; }
-        myPlayer.hand.splice(index,1);
-        g.currentTrick.push({ ...card, playerId: state.playerId, playerTeam: myPlayer.team });
-        let nextIdx = (g.players.findIndex(p=>p.id===g.currentPlayer)+1)%4;
+        if (g.phase !== 'playing' || g.currentPlayer !== state.playerId) return;
+        
+        let myPlayer = g.players.find(p => p.id === state.playerId);
+        const leadCard = g.currentTrick[0];
+        const leadSuit = leadCard?.suit;
+        const hasLeadSuit = leadSuit ? myPlayer.hand.some(c => c.suit === leadSuit) : true;
+        const selectedCard = myPlayer.hand[index];
+        
+        if (leadSuit && hasLeadSuit && selectedCard.suit !== leadSuit) {
+            showToast('⚠️ يجب اتباع نفس نوع الكرت الأول', true);
+            return;
+        }
+        
+        myPlayer.hand.splice(index, 1);
+        g.currentTrick.push({ ...selectedCard, playerId: state.playerId, playerTeam: myPlayer.team });
+        
+        let nextIdx = (g.players.findIndex(p => p.id === g.currentPlayer) + 1) % 4;
         g.currentPlayer = g.players[nextIdx].id;
+        
         if (g.currentTrick.length === 4) {
             let winner = g.currentTrick.reduce((win, c) => getCardValue(c, g.trump) > getCardValue(win, g.trump) ? c : win);
             let winnerTeam = winner.playerTeam;
             g.tricks[winnerTeam]++;
-            let nextPlayerId = winner.playerId;
-            g.currentPlayer = nextPlayerId;
+            g.currentPlayer = winner.playerId;
             g.currentTrick = [];
-            if (g.tricks[1]+g.tricks[2] >= 13) {
-                if (g.tricks[1] >= g.highestBid) g.scores[1] += g.highestBid; else g.scores[1] -= g.highestBid;
-                if (g.tricks[2] >= g.highestBid) g.scores[2] += g.highestBid; else g.scores[2] -= g.highestBid;
-                g.round++; g.tricks={1:0,2:0}; g.highestBid=0; g.highestBidder=null; g.trump=null; g.phase='bidding'; g.currentBidder=0;
-                const deck2 = createDeck(); g.players.forEach(p=>{ p.hand = deck2.splice(0,13); });
+            
+            if (g.tricks[1] + g.tricks[2] >= 13) {
+                if (g.tricks[1] >= g.totalBids) {
+                    g.scores[1] += g.totalBids;
+                } else {
+                    g.scores[1] -= g.totalBids;
+                }
+                if (g.tricks[2] >= g.totalBids) {
+                    g.scores[2] += g.totalBids;
+                } else {
+                    g.scores[2] -= g.totalBids;
+                }
+                
+                g.round++;
+                g.tricks = { 1: 0, 2: 0 };
+                g.trump = null;
+                g.phase = 'bidding';
+                g.bids = {};
+                g.totalBids = 0;
+                g.currentTrick = [];
+                g.currentPlayer = null;
+                
+                const allCards = [];
+                g.players.forEach(p => { allCards.push(...p.hand); p.hand = []; });
+                const newDeck = createDeck();
+                g.players.forEach(p => { p.hand = newDeck.splice(0, 13); });
             }
         }
+        
         await update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
     };
 
-    // ========== المافيا (القوانين الصحيحة) ==========
+    // ==================== لعبة المافيا ====================
     async function startMafiaGame() {
         const snap = await get(ref(db, 'rooms/'+state.roomId));
         const room = snap.val();
         let playerIds = Object.keys(room.players);
         let count = playerIds.length;
-        // توزيع الأدوار الصحيح
-        let mafiaCount = Math.floor(count / 3);
-        if (mafiaCount < 1) mafiaCount = 1;
-        if (mafiaCount > 4) mafiaCount = 4;
-        let policeCount = Math.floor(count / 5) + 1;
-        if (policeCount > 2) policeCount = 2;
-        let doctorCount = Math.floor(count / 6) + 1;
-        if (doctorCount > 2) doctorCount = 2;
-        let citizenCount = count - mafiaCount - policeCount - doctorCount;
-        if (citizenCount < 1) { citizenCount = 1; if (doctorCount > 1) doctorCount--; else if (policeCount > 1) policeCount--; else mafiaCount--; }
+        
+        let mafia = Math.min(4, Math.max(1, Math.floor(count/3)));
+        let police = Math.min(2, Math.floor(count/5)+1);
+        let doctor = Math.min(2, Math.floor(count/6)+1);
+        let citizen = count - mafia - police - doctor;
+        if(citizen < 1){ citizen=1; if(doctor>1) doctor--; else if(police>1) police--; else mafia--; }
         
         let roles = [];
-        for (let i=0; i<mafiaCount; i++) roles.push('mafia');
-        for (let i=0; i<policeCount; i++) roles.push('police');
-        for (let i=0; i<doctorCount; i++) roles.push('doctor');
-        for (let i=0; i<citizenCount; i++) roles.push('citizen');
-        for (let i=roles.length-1; i>0; i--) { let j=Math.floor(Math.random()*(i+1)); [roles[i],roles[j]]=[roles[j],roles[i]]; }
+        for(let i=0; i<mafia; i++) roles.push('mafia');
+        for(let i=0; i<police; i++) roles.push('police');
+        for(let i=0; i<doctor; i++) roles.push('doctor');
+        for(let i=0; i<citizen; i++) roles.push('citizen');
         
-        let updates={}; 
-        playerIds.forEach((id,i)=>{ updates[`rooms/${state.roomId}/players/${id}/role`]=roles[i]; updates[`rooms/${state.roomId}/players/${id}/alive`]=true; });
-        updates[`rooms/${state.roomId}/phase`]='mafia-playing';
-        updates[`rooms/${state.roomId}/mafiaData`]={ phase:'night', round:1, nightActions:{}, dayVotes:{}, eliminatedTonight:null, eliminatedToday:null };
+        for(let i=roles.length-1; i>0; i--){ let j=Math.floor(Math.random()*(i+1)); [roles[i],roles[j]]=[roles[j],roles[i]]; }
+        
+        let updates = {};
+        playerIds.forEach((id, i) => { updates[`rooms/${state.roomId}/players/${id}/role`] = roles[i]; });
+        updates[`rooms/${state.roomId}/phase`] = 'mafia-playing';
+        updates[`rooms/${state.roomId}/mafiaData`] = { 
+            phase: 'night', round: 1, nightActions: {}, dayVotes: {}, 
+            eliminatedTonight: null, eliminatedToday: null, lastNightSave: null 
+        };
         await update(ref(db), updates);
         
-        await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:`🎮 المافيا بدأت! ${mafiaCount} مافيا، ${policeCount} بوليس، ${doctorCount} طبيب، ${citizenCount} مواطن`, time:Date.now() });
+        await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text: '🎮 لعبة المافيا بدأت!', time:Date.now() });
     }
 
     function startMafiaListener() {
@@ -544,36 +632,41 @@
             const m = room.mafiaData;
             const players = room.players;
             const me = players[state.playerId];
+            if(!me) return;
             
-            // عرض الدور
             const roleNames = { mafia:'🔪 مافيا', police:'👮 بوليس', doctor:'💉 طبيب', citizen:'👤 مواطن' };
-            document.getElementById('mafiaRoleDisplay').innerHTML = `<div style="font-size:2.5rem;">${me.role==='mafia'?'🔪':me.role==='police'?'👮':me.role==='doctor'?'💉':'👤'}</div><div style="font-size:1.2rem;">${roleNames[me.role]||'مواطن'}</div>`;
+            document.getElementById('mafiaRoleDisplay').innerHTML = `<div style="font-size:2rem;">${me.role==='mafia'?'🔪':me.role==='police'?'👮':me.role==='doctor'?'💉':'👤'}</div><div>${roleNames[me.role] || me.role}</div>`;
             
-            // عرض نتائج الليل
-            if(m.eliminatedTonight && m.phase === 'day') {
-                document.getElementById('mafiaNightResult').innerHTML = `<div style="color:#ef4444;">💀 قُتل الليلة: ${escapeHTML(players[m.eliminatedTonight]?.name)}</div>`;
-            } else if(m.phase === 'day') {
-                document.getElementById('mafiaNightResult').innerHTML = `<div style="color:#10b981;">✅ لم يُقتل أحد الليلة</div>`;
-            } else {
+            document.getElementById('mafiaPlayersList').innerHTML = Object.entries(players).filter(([id])=>id!==state.playerId).map(([id,p])=>`<div class="player-badge ${!p.alive?'dead':''}" onclick="mafiaAction('${id}')" style="cursor:pointer">${escapeHTML(p.name)}${!p.alive?'💀':''}</div>`).join('');
+            
+            if(m.phase === 'night' && me.alive){
+                let actionMsg = '';
+                if(me.role === 'mafia') actionMsg = '🌙 اختر من تقتل';
+                else if(me.role === 'police') actionMsg = '🌙 اختر من تفحص';
+                else if(me.role === 'doctor') actionMsg = '🌙 اختر من تنقذ';
+                else actionMsg = '🌙 أنت مواطن... نم';
+                document.getElementById('mafiaActions').innerHTML = `<div style="text-align:center">${actionMsg}</div>`;
                 document.getElementById('mafiaNightResult').innerHTML = '';
-            }
-            
-            // قائمة اللاعبين
-            document.getElementById('mafiaPlayersList').innerHTML = Object.entries(players).filter(([id,p])=>id!==state.playerId).map(([id,p])=>`<div class="player-badge" onclick="mafiaAction('${id}')" style="cursor:pointer; ${!p.alive?'opacity:0.5;filter:grayscale(0.5);':''}">${escapeHTML(p.name)}${!p.alive?'💀':''}</div>`).join('');
-            
-            // أزرار الإجراءات
-            if(m.phase==='night' && me.alive){
-                if(me.role==='mafia') document.getElementById('mafiaActions').innerHTML = '<div style="text-align:center">🌙 اضغط على لاعب لتقتله</div>';
-                else if(me.role==='police') document.getElementById('mafiaActions').innerHTML = '<div style="text-align:center">🌙 اضغط على لاعب لتفحص هويته</div>';
-                else if(me.role==='doctor') document.getElementById('mafiaActions').innerHTML = '<div style="text-align:center">🌙 اضغط على لاعب لتنقذه</div>';
-                else document.getElementById('mafiaActions').innerHTML = '<div style="text-align:center">🌙 نم جيداً...</div>';
-            } else if(m.phase==='day' && me.alive){
-                document.getElementById('mafiaActions').innerHTML = `<div style="text-align:center">☀️ اضغط على لاعب للتصويت عليه<br><button onclick="resolveMafiaVote()" style="margin-top:12px;">🗳️ إنهاء التصويت</button></div>`;
+            } 
+            else if(m.phase === 'day' && me.alive){
+                document.getElementById('mafiaActions').innerHTML = `<div style="text-align:center">☀️ ناقش وصوت لإعدام أحد<br>
+                    <button onclick="resolveMafiaVote()" style="margin-top:10px;">🗳️ إنهاء التصويت</button></div>`;
+                if(m.eliminatedTonight){
+                    const killed = players[m.eliminatedTonight];
+                    document.getElementById('mafiaNightResult').innerHTML = `<div style="color:#ef4444">💀 قُتل الليلة: ${killed?.name || '???'}</div>`;
+                } else {
+                    document.getElementById('mafiaNightResult').innerHTML = `<div style="color:#10b981">✅ لم يُقتل أحد الليلة</div>`;
+                }
             } else {
                 document.getElementById('mafiaActions').innerHTML = '';
             }
             
-            if(room.phase==='finished') setTimeout(()=>leaveRoom(),3000);
+            if(room.phase === 'finished'){
+                let alivePlayers = Object.entries(players).filter(([id,p])=>p.alive!==false);
+                let aliveMafia = alivePlayers.filter(([id,p])=>p.role==='mafia').length;
+                let winner = aliveMafia === 0 ? 'المواطنون' : 'المافيا';
+                document.getElementById('mafiaActions').innerHTML = `<div style="text-align:center; padding:20px;">🏆 انتهت اللعبة - فاز ${winner}<br><button onclick="leaveRoom()">العودة</button></div>`;
+            }
         });
     }
     
@@ -582,17 +675,17 @@
         const room = snap.val();
         const m = room.mafiaData;
         const me = room.players[state.playerId];
-        if(m.phase === 'night') {
-            let actionType = me.role === 'mafia' ? 'mafia_kill' : (me.role === 'police' ? 'police_check' : (me.role === 'doctor' ? 'doctor_save' : null));
-            if(actionType) {
-                await update(ref(db, `rooms/${state.roomId}/mafiaData/nightActions/${state.playerId}`), { target: targetId, action: actionType });
-                showToast('✅ تم');
-                if(actionType === 'police_check') {
-                    let targetRole = room.players[targetId]?.role;
-                    showToast(`🔍 ${room.players[targetId]?.name} هو ${targetRole === 'mafia' ? 'مافيا 🔪' : 'مواطن 👤'}`);
-                }
-            }
-        } else if(m.phase === 'day') {
+        
+        if(m.phase === 'night'){
+            let action = '';
+            if(me.role === 'mafia') action = 'mafia_kill';
+            else if(me.role === 'police') action = 'police_check';
+            else if(me.role === 'doctor') action = 'doctor_save';
+            else return;
+            
+            await update(ref(db, `rooms/${state.roomId}/mafiaData/nightActions/${state.playerId}`), { target: targetId, action: action });
+            showToast('✅ تم تنفيذ الإجراء');
+        } else if(m.phase === 'day'){
             await update(ref(db, `rooms/${state.roomId}/mafiaData/dayVotes/${state.playerId}`), targetId);
             showToast('✅ تم التصويت');
         }
@@ -601,70 +694,91 @@
     window.resolveMafiaVote = async function() {
         const snap = await get(ref(db, 'rooms/'+state.roomId));
         const room = snap.val();
-        const m = room.mafiaData;
-        const votes = m?.dayVotes || {};
+        const votes = room.mafiaData?.dayVotes || {};
         const players = room.players;
         
-        // حساب الأصوات
-        let voteCount = {};
-        Object.values(votes).forEach(v => { if(players[v]?.alive !== false) voteCount[v] = (voteCount[v]||0)+1; });
+        const voteCount = {};
+        Object.values(votes).forEach(v => { if(v && players[v]?.alive !== false) voteCount[v] = (voteCount[v]||0)+1; });
+        
         let maxVotes = 0, eliminated = null;
-        Object.entries(voteCount).forEach(([id,c]) => { if(c > maxVotes) { maxVotes = c; eliminated = id; } });
+        Object.entries(voteCount).forEach(([id, c]) => { if(c > maxVotes){ maxVotes=c; eliminated=id; } });
         
         let updates = {};
-        if(eliminated && maxVotes > 0) {
-            updates[`rooms/${state.roomId}/players/${eliminated}/alive`] = false;
-            updates[`rooms/${state.roomId}/mafiaData/eliminatedToday`] = eliminated;
-            await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:`⚰️ تم إعدام ${players[eliminated]?.name}`, time:Date.now() });
-        }
+        if(eliminated) updates[`rooms/${state.roomId}/players/${eliminated}/alive`] = false;
         
-        // التحقق من الفوز
-        let alivePlayers = Object.entries(players).filter(([id,p]) => p.alive !== false);
-        let aliveMafia = alivePlayers.filter(([id,p]) => p.role === 'mafia').length;
-        let aliveCitizens = alivePlayers.filter(([id,p]) => p.role !== 'mafia').length;
+        let alivePlayers = Object.entries(players).filter(([id,p])=>p.alive!==false && id!==eliminated);
+        let aliveMafia = alivePlayers.filter(([id,p])=>p.role==='mafia').length;
+        let aliveCitizens = alivePlayers.filter(([id,p])=>p.role!=='mafia').length;
         
-        if(aliveMafia === 0) {
+        if(aliveMafia === 0){
             updates[`rooms/${state.roomId}/phase`] = 'finished';
             await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:'🏆 فاز المواطنون! تم القضاء على جميع المافيا', time:Date.now() });
-        } else if(aliveMafia >= aliveCitizens) {
+        } else if(aliveMafia >= aliveCitizens){
             updates[`rooms/${state.roomId}/phase`] = 'finished';
             await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:'🏆 فازت المافيا! سيطرت على القرية', time:Date.now() });
         } else {
             updates[`rooms/${state.roomId}/mafiaData/phase`] = 'night';
-            updates[`rooms/${state.roomId}/mafiaData/round`] = (m.round||1) + 1;
             updates[`rooms/${state.roomId}/mafiaData/dayVotes`] = {};
             updates[`rooms/${state.roomId}/mafiaData/nightActions`] = {};
-            updates[`rooms/${state.roomId}/mafiaData/eliminatedToday`] = null;
+            updates[`rooms/${state.roomId}/mafiaData/eliminatedToday`] = eliminated;
             await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:'🌙 حل الليل... الجميع ينامون', time:Date.now() });
             
-            // معالجة القتل الليلي بعد 25 ثانية
             setTimeout(async () => {
-                const snap2 = await get(ref(db, 'rooms/'+state.roomId));
-                const room2 = snap2.val();
-                if(!room2 || room2.mafiaData?.phase !== 'night') return;
-                let nightActions = room2.mafiaData?.nightActions || {};
-                let killTarget = null, saveTarget = null;
-                Object.values(nightActions).forEach(a => { if(a.action === 'mafia_kill') killTarget = a.target; if(a.action === 'doctor_save') saveTarget = a.target; });
-                let updates2 = {};
-                if(killTarget && killTarget !== saveTarget && room2.players[killTarget]?.alive !== false) {
-                    updates2[`rooms/${state.roomId}/players/${killTarget}/alive`] = false;
-                    updates2[`rooms/${state.roomId}/mafiaData/eliminatedTonight`] = killTarget;
-                    await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:`💀 قُتل ${room2.players[killTarget]?.name} أثناء الليل`, time:Date.now() });
-                } else {
-                    updates2[`rooms/${state.roomId}/mafiaData/eliminatedTonight`] = null;
-                }
-                updates2[`rooms/${state.roomId}/mafiaData/phase`] = 'day';
-                updates2[`rooms/${state.roomId}/mafiaData/nightActions`] = {};
-                await update(ref(db), updates2);
-                await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:'☀️ حل الصباح... استيقظ الجميع', time:Date.now() });
-            }, 25000);
+                await processMafiaNightKill(state.roomId);
+            }, 30000);
         }
+        
         await update(ref(db), updates);
     };
+    
+    async function processMafiaNightKill(roomId) {
+        const snap = await get(ref(db, 'rooms/'+roomId));
+        const room = snap.val();
+        if(!room?.mafiaData || room.mafiaData.phase !== 'night') return;
+        
+        const nightActions = room.mafiaData.nightActions || {};
+        const players = room.players;
+        
+        let killTarget = null, saveTarget = null;
+        Object.values(nightActions).forEach(a => {
+            if(a.action === 'mafia_kill') killTarget = a.target;
+            if(a.action === 'doctor_save') saveTarget = a.target;
+        });
+        
+        let updates = {};
+        if(killTarget && killTarget !== saveTarget && players[killTarget]?.alive !== false){
+            updates[`rooms/${roomId}/players/${killTarget}/alive`] = false;
+            updates[`rooms/${roomId}/mafiaData/eliminatedTonight`] = killTarget;
+            await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:`💀 قُتل ${players[killTarget]?.name} أثناء الليل`, time:Date.now() });
+        } else {
+            updates[`rooms/${roomId}/mafiaData/eliminatedTonight`] = null;
+        }
+        
+        let alivePlayers = Object.entries(players).filter(([id,p])=>p.alive!==false && (killTarget !== id || killTarget === saveTarget));
+        let aliveMafia = alivePlayers.filter(([id,p])=>p.role==='mafia').length;
+        let aliveCitizens = alivePlayers.filter(([id,p])=>p.role!=='mafia').length;
+        
+        if(aliveMafia === 0){
+            updates[`rooms/${roomId}/phase`] = 'finished';
+            await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:'🏆 فاز المواطنون! تم القضاء على جميع المافيا', time:Date.now() });
+        } else if(aliveMafia >= aliveCitizens){
+            updates[`rooms/${roomId}/phase`] = 'finished';
+            await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:'🏆 فازت المافيا! سيطرت على القرية', time:Date.now() });
+        } else {
+            updates[`rooms/${roomId}/mafiaData/phase`] = 'day';
+            updates[`rooms/${roomId}/mafiaData/nightActions`] = {};
+            await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:'☀️ حل الصباح... استيقظ الجميع', time:Date.now() });
+        }
+        
+        await update(ref(db), updates);
+    }
 
-    // مغادرة الغرفة
+    // ========== مغادرة الغرفة ==========
     window.leaveRoom = async function() {
-        if(state.roomId) { await remove(ref(db, 'rooms/'+state.roomId+'/players/'+state.playerId)).catch(()=>{}); }
+        if(state.roomId) { 
+            await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:state.playerName+' غادر الغرفة', time:Date.now() });
+            await remove(ref(db, 'rooms/'+state.roomId+'/players/'+state.playerId)).catch(()=>{}); 
+        }
         if(roomListener) roomListener();
         state = { ...state, roomId:null, playerId:null, isHost:false };
         navigateTo('rooms');
@@ -672,11 +786,11 @@
     };
     document.getElementById('lobbyBackBtn').onclick = leaveRoom;
 
-    // لوحة المدير
+    // ========== لوحة المدير ==========
     window.promptAdmin = function() {
-        let pwd = prompt('🔐 كلمة مرور المدير:');
-        if(pwd === '0937318709Aa@') alert('✅ مرحباً مدير');
-        else alert('❌ كلمة مرور خاطئة');
+        let pwd = prompt('كلمة مرور المدير:');
+        if(pwd === '0937318709Aa@') alert('مرحباً أيها المدير');
+        else alert('كلمة مرور خاطئة');
     };
     
     navigateTo('menu');
