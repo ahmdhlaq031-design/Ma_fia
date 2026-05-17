@@ -116,6 +116,18 @@
         .card.playable { border: 2px solid #10b981; }
         .card.not-playable { opacity: 0.4; cursor: not-allowed; }
         
+        .team-btn {
+            background: #1e1e2e;
+            border: 2px solid #334155;
+            padding: 20px;
+            font-size: 1.5rem;
+            width: 45%;
+            margin: 10px;
+        }
+        .team-btn.selected { border-color: #d4af37; background: #2d2d3e; }
+        .team-btn.team1 { color: #ef4444; }
+        .team-btn.team2 { color: #3b82f6; }
+        
         .modal {
             position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px);
             display: none; align-items: center; justify-content: center; z-index: 1000;
@@ -130,9 +142,6 @@
             font-size: 1.8rem;
             box-shadow: 0 8px 25px rgba(0,0,0,0.4);
         }
-        
-        .bid-btn { padding: 10px 18px; margin: 4px; font-size: 1rem; background: #2d2d3e; }
-        .bid-btn.selected { background: #d4af37; color: #000; }
         
         @media (max-width: 480px) { .page { padding: 12px; } .game-card { padding: 14px; } .card { min-width: 45px; min-height: 65px; font-size: 1rem; } }
     </style>
@@ -177,6 +186,25 @@
     <div id="gameActions" style="margin-top:15px;"></div>
 </div>
 
+<!-- ========== صفحة اختيار الفريق ========== -->
+<div class="page" id="teamSelectPage">
+    <button class="back-btn" onclick="leaveRoom()">◀ خروج</button>
+    <h2>♠️ اختيار الفريق</h2>
+    <div style="display: flex; justify-content: space-between; gap: 20px; margin: 30px 0;">
+        <button class="team-btn team1" id="team1Btn" onclick="selectTeam(1)">🔥 فريق 1<br><span id="team1Count">0</span> لاعب</button>
+        <button class="team-btn team2" id="team2Btn" onclick="selectTeam(2)">💙 فريق 2<br><span id="team2Count">0</span> لاعب</button>
+    </div>
+    <div id="teamSelectStatus" style="text-align: center; color: #d4af37;"></div>
+</div>
+
+<!-- ========== صفحة اختيار الطرنيب (للمضيف فقط) ========== -->
+<div class="page" id="trumpSelectPage">
+    <button class="back-btn" onclick="leaveRoom()">◀ خروج</button>
+    <h2>♠️ اختيار الطرنيب</h2>
+    <div id="trumpSelectArea" style="text-align: center; margin: 30px 0;"></div>
+    <div id="trumpSelectStatus" style="text-align: center; color: #d4af37;"></div>
+</div>
+
 <!-- ========== صفحة لعبة الطرنيب ========== -->
 <div class="page" id="tarneebGamePage">
     <button class="back-btn" onclick="leaveRoom()">◀ خروج</button>
@@ -186,15 +214,6 @@
         <div style="background:#1e1e2e; padding:15px; border-radius:16px; text-align:center; width:45%;"><div style="color:#d4af37; font-size:1.8rem;" id="team2Score">0</div><div>فريق 2</div></div>
     </div>
     <div id="tarneebInfo" style="background:#00000030; padding:8px; border-radius:12px; text-align:center; margin:10px 0;"></div>
-    
-    <!-- مرحلة الطلب -->
-    <div id="biddingArea" style="text-align:center; margin:10px 0;"></div>
-    <div id="biddingStatus" style="text-align:center; margin:10px 0; font-size:0.9rem; color:#d4af37;"></div>
-    
-    <!-- مرحلة اختيار الطرنيب (فقط المنشئ) -->
-    <div id="trumpSelectArea" style="text-align:center; margin:10px 0; display:none;"></div>
-    
-    <!-- مرحلة اللعب -->
     <div id="tableCards" style="display:flex; justify-content:center; gap:10px; min-height:90px; margin:10px 0;"></div>
     <div id="turnIndicator" style="text-align:center; padding:8px; background:#00000030; border-radius:20px; margin:5px 0;"></div>
     <div id="playerHand" style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin-top:10px;"></div>
@@ -227,7 +246,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // ========== الحالة العامة ==========
     let state = {
         currentGame: null, roomId: null, playerId: null, playerName: null, isHost: false,
         pendingRoomId: null, pendingIsPrivate: false, pendingPassword: null
@@ -239,12 +257,13 @@
     function generateId() { return Date.now().toString(36)+'_'+Math.random().toString(36).substr(2,6); }
     function escapeHTML(str) { return str?.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}) || ''; }
 
-    // ========== التنقل ==========
     window.navigateTo = function(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         if (page === 'menu') document.getElementById('menuPage').classList.add('active');
         else if (page === 'rooms') document.getElementById('roomsPage').classList.add('active');
         else if (page === 'lobby') document.getElementById('lobbyPage').classList.add('active');
+        else if (page === 'teamSelect') document.getElementById('teamSelectPage').classList.add('active');
+        else if (page === 'trumpSelect') document.getElementById('trumpSelectPage').classList.add('active');
         else if (page === 'tarneebGame') document.getElementById('tarneebGamePage').classList.add('active');
         else if (page === 'mafiaGame') document.getElementById('mafiaGamePage').classList.add('active');
     };
@@ -256,7 +275,6 @@
         loadRooms();
     };
 
-    // ========== تحميل وعرض الغرف ==========
     async function loadRooms() {
         if (roomsListener) roomsListener();
         roomsListener = onValue(ref(db, 'rooms'), (snap) => {
@@ -301,7 +319,7 @@
         if (Object.keys(room.players||{}).length >= max) { showToast('الغرفة ممتلئة', true); return; }
         state.roomId = roomId; state.playerName = playerName; state.currentGame = room.game;
         state.playerId = generateId();
-        await update(ref(db, 'rooms/'+roomId+'/players/'+state.playerId), { name: playerName, host: false, alive: true });
+        await update(ref(db, 'rooms/'+roomId+'/players/'+state.playerId), { name: playerName, host: false, alive: true, team: null });
         onDisconnect(ref(db, 'rooms/'+roomId+'/players/'+state.playerId)).remove();
         await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:playerName+' انضم للغرفة', time:Date.now() });
         if (roomsListener) roomsListener();
@@ -325,7 +343,7 @@
         await set(ref(db, 'rooms/'+roomId), {
             game: state.currentGame, name: roomName, hostName: playerName, hostId: playerId,
             isPrivate: isPrivate, password: password, phase: 'lobby', createdAt: Date.now(),
-            players: { [playerId]: { name: playerName, host: true, alive: true } }
+            players: { [playerId]: { name: playerName, host: true, alive: true, team: null } }
         });
         onDisconnect(ref(db, 'rooms/'+roomId+'/players/'+playerId)).remove();
         await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:playerName+' أنشأ الغرفة', time:Date.now() });
@@ -336,7 +354,6 @@
     };
     document.getElementById('createRoomBtn').onclick = createRoom;
 
-    // ========== مستمعي الغرفة والمحادثة ==========
     function startRoomListener() {
         if (roomListener) roomListener();
         roomListener = onValue(ref(db, 'rooms/'+state.roomId), (snap) => {
@@ -344,16 +361,21 @@
             if (!room) { leaveRoom(); return; }
             document.getElementById('lobbyRoomName').innerText = room.name;
             const players = room.players || {};
-            document.getElementById('playersContainer').innerHTML = Object.keys(players).map(id => `<div class="player-badge ${players[id].host?'host':''} ${id===state.playerId?'self':''} ${!players[id].alive?'dead':''}">${escapeHTML(players[id].name)}${players[id].host?'👑':''}</div>`).join('');
+            document.getElementById('playersContainer').innerHTML = Object.keys(players).map(id => `<div class="player-badge ${players[id].host?'host':''} ${id===state.playerId?'self':''}">${escapeHTML(players[id].name)}${players[id].host?'👑':''}${players[id].team ? ' (فريق '+players[id].team+')' : ''}</div>`).join('');
             
-            const minPlayers = room.game === 'tarneeb' ? 4 : 4;
-            const canStart = state.isHost && room.phase === 'lobby' && Object.keys(players).length >= minPlayers;
+            const minPlayers = 4;
+            const allPlayers = Object.keys(players).length;
+            const canStart = state.isHost && room.phase === 'lobby' && allPlayers >= minPlayers;
+            
             if (canStart) {
                 document.getElementById('gameActions').innerHTML = '<button id="startGameBtn" style="width:100%;">🎮 ابدأ اللعبة</button>';
                 document.getElementById('startGameBtn').onclick = () => startGame();
             } else if (!state.isHost && room.phase === 'lobby') {
                 document.getElementById('gameActions').innerHTML = '<div style="text-align:center;color:#64748b;">⏳ في انتظار المضيف (يحتاج 4 لاعبين)...</div>';
             }
+            
+            if (room.phase === 'team-selecting') { navigateTo('teamSelect'); updateTeamSelectUI(room); }
+            if (room.phase === 'trump-selecting') { navigateTo('trumpSelect'); updateTrumpSelectUI(room); }
             if (room.phase === 'tarneeb-playing') { navigateTo('tarneebGame'); startTarneebListener(); }
             if (room.phase === 'mafia-playing') { navigateTo('mafiaGame'); startMafiaListener(); }
         });
@@ -378,12 +400,76 @@
         document.getElementById('chatInput').value = '';
     };
 
-    // ========== بدء اللعبة ==========
     async function startGame() {
         if (!state.isHost) return;
-        if (state.currentGame === 'tarneeb') await startTarneebGame();
-        else if (state.currentGame === 'mafia') await startMafiaGame();
+        if (state.currentGame === 'tarneeb') {
+            await update(ref(db, 'rooms/'+state.roomId), { phase: 'team-selecting' });
+        } else if (state.currentGame === 'mafia') {
+            await startMafiaGame();
+        }
     }
+
+    function updateTeamSelectUI(room) {
+        const players = room.players || {};
+        let team1Count = 0, team2Count = 0;
+        Object.values(players).forEach(p => { if(p.team === 1) team1Count++; if(p.team === 2) team2Count++; });
+        document.getElementById('team1Count').innerText = team1Count;
+        document.getElementById('team2Count').innerText = team2Count;
+        const myTeam = players[state.playerId]?.team;
+        document.getElementById('team1Btn').classList.toggle('selected', myTeam === 1);
+        document.getElementById('team2Btn').classList.toggle('selected', myTeam === 2);
+        
+        const allPlayers = Object.keys(players).length;
+        const allSelected = Object.values(players).every(p => p.team !== null);
+        if (allSelected && state.isHost) {
+            document.getElementById('teamSelectStatus').innerHTML = '<button onclick="confirmTeams()" style="margin-top:20px;">✅ تأكيد الفرق واختيار الطرنيب</button>';
+        } else if (allSelected) {
+            document.getElementById('teamSelectStatus').innerHTML = '<p style="margin-top:20px;">⏳ في انتظار المضيف لتأكيد الفرق...</p>';
+        } else {
+            document.getElementById('teamSelectStatus').innerHTML = `<p style="margin-top:20px;">⏳ في انتظار اختيار الفرق... (${allPlayers - (team1Count+team2Count)} لاعب لم يختار)</p>`;
+        }
+    }
+    
+    window.selectTeam = async function(team) {
+        await update(ref(db, 'rooms/'+state.roomId+'/players/'+state.playerId), { team: team });
+    };
+    
+    window.confirmTeams = async function() {
+        const snap = await get(ref(db, 'rooms/'+state.roomId));
+        const room = snap.val();
+        const players = room.players;
+        const team1Ids = Object.keys(players).filter(id => players[id].team === 1);
+        const team2Ids = Object.keys(players).filter(id => players[id].team === 2);
+        if (team1Ids.length !== 2 || team2Ids.length !== 2) {
+            showToast('يجب أن يكون كل فريق مكون من لاعبين', true);
+            return;
+        }
+        await update(ref(db, 'rooms/'+state.roomId), { phase: 'trump-selecting' });
+    };
+    
+    function updateTrumpSelectUI(room) {
+        if (state.isHost) {
+            document.getElementById('trumpSelectArea').innerHTML = `
+                <p>🎯 اختر الطرنيب:</p>
+                <div style="display:flex; gap:15px; justify-content:center; margin:20px 0;">
+                    <button onclick="selectTrumpFinal('♥️')" style="font-size:2rem; padding:15px 25px;">♥️</button>
+                    <button onclick="selectTrumpFinal('♦️')" style="font-size:2rem; padding:15px 25px;">♦️</button>
+                    <button onclick="selectTrumpFinal('♣️')" style="font-size:2rem; padding:15px 25px;">♣️</button>
+                    <button onclick="selectTrumpFinal('♠️')" style="font-size:2rem; padding:15px 25px;">♠️</button>
+                </div>
+            `;
+            document.getElementById('trumpSelectStatus').innerHTML = '';
+        } else {
+            document.getElementById('trumpSelectArea').innerHTML = '<p style="margin:30px;">⏳ جاري اختيار الطرنيب من قبل المضيف...</p>';
+            document.getElementById('trumpSelectStatus').innerHTML = '';
+        }
+    }
+    
+    window.selectTrumpFinal = async function(suit) {
+        if (!state.isHost) return;
+        await update(ref(db, 'rooms/'+state.roomId), { phase: 'tarneeb-playing', tarneebTrump: suit });
+        await startTarneebGameWithTrump(suit);
+    };
 
     // ==================== لعبة الطرنيب ====================
     const SUITS = ['♥️','♦️','♣️','♠️'];
@@ -399,34 +485,23 @@
     
     function getCardValue(card, trump) { return card.value + (card.suit === trump ? 100 : 0); }
 
-    async function startTarneebGame() {
+    async function startTarneebGameWithTrump(trump) {
         const roomSnap = await get(ref(db, 'rooms/'+state.roomId));
         const room = roomSnap.val();
         const playerIds = Object.keys(room.players);
-        
         const players = playerIds.map((id, idx) => ({
-            id, name: room.players[id].name,
-            hand: [], team: idx % 2 === 0 ? 1 : 2
+            id, name: room.players[id].name, team: room.players[id].team,
+            hand: []
         }));
         
         const deck = createDeck();
         players.forEach(p => { p.hand = deck.splice(0, 13); });
         
         const gameData = {
-            players,
-            phase: 'bidding',
-            bids: {},
-            totalBids: 0,
-            trump: null,
-            trumpChooser: null,
-            currentTrick: [],
-            currentPlayer: null,
-            tricks: { 1: 0, 2: 0 },
-            scores: { 1: 0, 2: 0 },
-            round: 1
+            players, trump: trump, currentTrick: [], currentPlayer: players[0].id,
+            tricks: { 1: 0, 2: 0 }, scores: { 1: 0, 2: 0 }, round: 1
         };
-        
-        await update(ref(db, 'rooms/'+state.roomId), { phase: 'tarneeb-playing', tarneebGame: gameData });
+        await update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), gameData);
     }
 
     function startTarneebListener() {
@@ -439,103 +514,28 @@
             
             document.getElementById('team1Score').innerText = g.scores[1];
             document.getElementById('team2Score').innerText = g.scores[2];
+            document.getElementById('tarneebInfo').innerHTML = `طرنيب: ${g.trump || '♥️'} | الجولة: ${g.round}`;
             
-            if (g.phase === 'bidding') {
-                document.getElementById('biddingArea').style.display = 'block';
-                document.getElementById('trumpSelectArea').style.display = 'none';
-                
-                const myBid = g.bids[state.playerId];
-                const allBids = Object.values(g.bids);
-                const allBidCount = Object.keys(g.bids).length;
-                
-                if (!myBid) {
-                    let bidsHtml = '<p>🎯 اختر طلبك (2-14):</p><div>';
-                    for (let i = 2; i <= 14; i++) {
-                        bidsHtml += `<button class="bid-btn" onclick="submitBid(${i})">${i}</button>`;
-                    }
-                    bidsHtml += '</div>';
-                    document.getElementById('biddingArea').innerHTML = bidsHtml;
-                } else {
-                    document.getElementById('biddingArea').innerHTML = `<p>✅ طلبت: ${myBid}</p><p>⏳ في انتظار بقية اللاعبين...</p>`;
-                }
-                
-                const totalSoFar = allBids.reduce((a,b) => a + b, 0);
-                document.getElementById('biddingStatus').innerHTML = `الطلبات: ${allBidCount}/4 لاعبين طلبوا | المجموع: ${totalSoFar}`;
-                
-                if (allBidCount === 4) {
-                    const totalBids = totalSoFar;
-                    if (totalBids >= 12) {
-                        document.getElementById('biddingStatus').innerHTML = `✅ مجموع الطلبات: ${totalBids} (12+) → المنشئ يختار الطرنيب`;
-                        g.phase = 'trump-select';
-                        g.totalBids = totalBids;
-                        g.trumpChooser = room.hostId;
-                        update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
-                    } else {
-                        document.getElementById('biddingStatus').innerHTML = `⚠️ مجموع الطلبات: ${totalBids} (أقل من 12) → اللعب بدون طرنيب`;
-                        g.phase = 'playing';
-                        g.totalBids = totalBids;
-                        g.currentPlayer = g.players[0].id;
-                        update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
-                    }
-                }
-            }
-            else if (g.phase === 'trump-select') {
-                document.getElementById('biddingArea').style.display = 'none';
-                document.getElementById('trumpSelectArea').style.display = 'block';
-                
-                if (g.trumpChooser === state.playerId) {
-                    document.getElementById('trumpSelectArea').innerHTML = `<p>🎯 أنت المنشئ، اختر الطرنيب:</p>
-                        ${SUITS.map(s => `<button class="card" onclick="selectTrump('${s}')">${s}</button>`).join('')}`;
-                } else {
-                    document.getElementById('trumpSelectArea').innerHTML = `<p style="text-align:center">⏳ جاري اختيار الطرنيب...</p>`;
-                }
-            }
-            else if (g.phase === 'playing') {
-                document.getElementById('biddingArea').style.display = 'none';
-                document.getElementById('trumpSelectArea').style.display = 'none';
-                document.getElementById('tarneebInfo').innerHTML = `طرنيب: ${g.trump || 'لا يوجد'} | الجولة: ${g.round} | الطلب الكلي: ${g.totalBids}`;
-                
-                const isMyTurn = g.currentPlayer === state.playerId;
-                document.getElementById('turnIndicator').innerHTML = isMyTurn ? '🎯 دورك!' : `⏳ دور ${escapeHTML(g.players.find(p => p.id === g.currentPlayer)?.name)}`;
-                
-                document.getElementById('tableCards').innerHTML = g.currentTrick.map(c => `<div class="card" style="background:#2d2d3e">${c.rank}${c.suit}</div>`).join('');
-                
-                const leadCard = g.currentTrick[0];
-                const leadSuit = leadCard?.suit;
-                const hasLeadSuit = leadSuit ? myPlayer.hand.some(c => c.suit === leadSuit) : true;
-                
-                document.getElementById('playerHand').innerHTML = myPlayer.hand.map((c, idx) => {
-                    let canPlay = true;
-                    if (leadSuit && hasLeadSuit && c.suit !== leadSuit) canPlay = false;
-                    return `<div class="card ${canPlay ? 'playable' : 'not-playable'}" onclick="${canPlay ? `playCard(${idx})` : ''}">${c.rank}${c.suit}</div>`;
-                }).join('');
-            }
+            const isMyTurn = g.currentPlayer === state.playerId;
+            document.getElementById('turnIndicator').innerHTML = isMyTurn ? '🎯 دورك!' : `⏳ دور ${escapeHTML(g.players.find(p => p.id === g.currentPlayer)?.name)}`;
+            document.getElementById('tableCards').innerHTML = g.currentTrick.map(c => `<div class="card">${c.rank}${c.suit}</div>`).join('');
+            
+            const leadCard = g.currentTrick[0];
+            const leadSuit = leadCard?.suit;
+            const hasLeadSuit = leadSuit ? myPlayer.hand.some(c => c.suit === leadSuit) : true;
+            
+            document.getElementById('playerHand').innerHTML = myPlayer.hand.map((c, idx) => {
+                let canPlay = true;
+                if (leadSuit && hasLeadSuit && c.suit !== leadSuit) canPlay = false;
+                return `<div class="card ${canPlay ? 'playable' : 'not-playable'}" onclick="${canPlay ? `playTarneebCard(${idx})` : ''}">${c.rank}${c.suit}</div>`;
+            }).join('');
         });
     }
     
-    window.submitBid = async function(bid) {
+    window.playTarneebCard = async function(index) {
         const snap = await get(ref(db, 'rooms/'+state.roomId));
         let g = snap.val().tarneebGame;
-        if (g.phase !== 'bidding') return;
-        if (g.bids[state.playerId]) return;
-        g.bids[state.playerId] = bid;
-        await update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
-    };
-    
-    window.selectTrump = async function(suit) {
-        const snap = await get(ref(db, 'rooms/'+state.roomId));
-        let g = snap.val().tarneebGame;
-        if (g.phase !== 'trump-select' || g.trumpChooser !== state.playerId) return;
-        g.trump = suit;
-        g.phase = 'playing';
-        g.currentPlayer = g.players[0].id;
-        await update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
-    };
-    
-    window.playCard = async function(index) {
-        const snap = await get(ref(db, 'rooms/'+state.roomId));
-        let g = snap.val().tarneebGame;
-        if (g.phase !== 'playing' || g.currentPlayer !== state.playerId) return;
+        if (g.currentPlayer !== state.playerId) return;
         
         let myPlayer = g.players.find(p => p.id === state.playerId);
         const leadCard = g.currentTrick[0];
@@ -556,39 +556,20 @@
         
         if (g.currentTrick.length === 4) {
             let winner = g.currentTrick.reduce((win, c) => getCardValue(c, g.trump) > getCardValue(win, g.trump) ? c : win);
-            let winnerTeam = winner.playerTeam;
-            g.tricks[winnerTeam]++;
+            g.tricks[winner.playerTeam]++;
             g.currentPlayer = winner.playerId;
             g.currentTrick = [];
             
             if (g.tricks[1] + g.tricks[2] >= 13) {
-                if (g.tricks[1] >= g.totalBids) {
-                    g.scores[1] += g.totalBids;
-                } else {
-                    g.scores[1] -= g.totalBids;
-                }
-                if (g.tricks[2] >= g.totalBids) {
-                    g.scores[2] += g.totalBids;
-                } else {
-                    g.scores[2] -= g.totalBids;
-                }
-                
+                if (g.tricks[1] > g.tricks[2]) g.scores[1] += 1;
+                else if (g.tricks[2] > g.tricks[1]) g.scores[2] += 1;
                 g.round++;
                 g.tricks = { 1: 0, 2: 0 };
-                g.trump = null;
-                g.phase = 'bidding';
-                g.bids = {};
-                g.totalBids = 0;
-                g.currentTrick = [];
-                g.currentPlayer = null;
-                
-                const allCards = [];
-                g.players.forEach(p => { allCards.push(...p.hand); p.hand = []; });
-                const newDeck = createDeck();
-                g.players.forEach(p => { p.hand = newDeck.splice(0, 13); });
+                const deck = createDeck();
+                g.players.forEach(p => { p.hand = deck.splice(0, 13); });
+                g.currentPlayer = g.players[0].id;
             }
         }
-        
         await update(ref(db, 'rooms/'+state.roomId+'/tarneebGame'), g);
     };
 
@@ -621,7 +602,6 @@
             eliminatedTonight: null, eliminatedToday: null, lastNightSave: null 
         };
         await update(ref(db), updates);
-        
         await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text: '🎮 لعبة المافيا بدأت!', time:Date.now() });
     }
 
@@ -636,7 +616,6 @@
             
             const roleNames = { mafia:'🔪 مافيا', police:'👮 بوليس', doctor:'💉 طبيب', citizen:'👤 مواطن' };
             document.getElementById('mafiaRoleDisplay').innerHTML = `<div style="font-size:2rem;">${me.role==='mafia'?'🔪':me.role==='police'?'👮':me.role==='doctor'?'💉':'👤'}</div><div>${roleNames[me.role] || me.role}</div>`;
-            
             document.getElementById('mafiaPlayersList').innerHTML = Object.entries(players).filter(([id])=>id!==state.playerId).map(([id,p])=>`<div class="player-badge ${!p.alive?'dead':''}" onclick="mafiaAction('${id}')" style="cursor:pointer">${escapeHTML(p.name)}${!p.alive?'💀':''}</div>`).join('');
             
             if(m.phase === 'night' && me.alive){
@@ -647,10 +626,8 @@
                 else actionMsg = '🌙 أنت مواطن... نم';
                 document.getElementById('mafiaActions').innerHTML = `<div style="text-align:center">${actionMsg}</div>`;
                 document.getElementById('mafiaNightResult').innerHTML = '';
-            } 
-            else if(m.phase === 'day' && me.alive){
-                document.getElementById('mafiaActions').innerHTML = `<div style="text-align:center">☀️ ناقش وصوت لإعدام أحد<br>
-                    <button onclick="resolveMafiaVote()" style="margin-top:10px;">🗳️ إنهاء التصويت</button></div>`;
+            } else if(m.phase === 'day' && me.alive){
+                document.getElementById('mafiaActions').innerHTML = `<div style="text-align:center">☀️ ناقش وصوت لإعدام أحد<br><button onclick="resolveMafiaVote()" style="margin-top:10px;">🗳️ إنهاء التصويت</button></div>`;
                 if(m.eliminatedTonight){
                     const killed = players[m.eliminatedTonight];
                     document.getElementById('mafiaNightResult').innerHTML = `<div style="color:#ef4444">💀 قُتل الليلة: ${killed?.name || '???'}</div>`;
@@ -675,14 +652,12 @@
         const room = snap.val();
         const m = room.mafiaData;
         const me = room.players[state.playerId];
-        
         if(m.phase === 'night'){
             let action = '';
             if(me.role === 'mafia') action = 'mafia_kill';
             else if(me.role === 'police') action = 'police_check';
             else if(me.role === 'doctor') action = 'doctor_save';
             else return;
-            
             await update(ref(db, `rooms/${state.roomId}/mafiaData/nightActions/${state.playerId}`), { target: targetId, action: action });
             showToast('✅ تم تنفيذ الإجراء');
         } else if(m.phase === 'day'){
@@ -696,20 +671,15 @@
         const room = snap.val();
         const votes = room.mafiaData?.dayVotes || {};
         const players = room.players;
-        
         const voteCount = {};
         Object.values(votes).forEach(v => { if(v && players[v]?.alive !== false) voteCount[v] = (voteCount[v]||0)+1; });
-        
         let maxVotes = 0, eliminated = null;
         Object.entries(voteCount).forEach(([id, c]) => { if(c > maxVotes){ maxVotes=c; eliminated=id; } });
-        
         let updates = {};
         if(eliminated) updates[`rooms/${state.roomId}/players/${eliminated}/alive`] = false;
-        
         let alivePlayers = Object.entries(players).filter(([id,p])=>p.alive!==false && id!==eliminated);
         let aliveMafia = alivePlayers.filter(([id,p])=>p.role==='mafia').length;
         let aliveCitizens = alivePlayers.filter(([id,p])=>p.role!=='mafia').length;
-        
         if(aliveMafia === 0){
             updates[`rooms/${state.roomId}/phase`] = 'finished';
             await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:'🏆 فاز المواطنون! تم القضاء على جميع المافيا', time:Date.now() });
@@ -722,12 +692,8 @@
             updates[`rooms/${state.roomId}/mafiaData/nightActions`] = {};
             updates[`rooms/${state.roomId}/mafiaData/eliminatedToday`] = eliminated;
             await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:'🌙 حل الليل... الجميع ينامون', time:Date.now() });
-            
-            setTimeout(async () => {
-                await processMafiaNightKill(state.roomId);
-            }, 30000);
+            setTimeout(async () => { await processMafiaNightKill(state.roomId); }, 30000);
         }
-        
         await update(ref(db), updates);
     };
     
@@ -735,29 +701,19 @@
         const snap = await get(ref(db, 'rooms/'+roomId));
         const room = snap.val();
         if(!room?.mafiaData || room.mafiaData.phase !== 'night') return;
-        
         const nightActions = room.mafiaData.nightActions || {};
         const players = room.players;
-        
         let killTarget = null, saveTarget = null;
-        Object.values(nightActions).forEach(a => {
-            if(a.action === 'mafia_kill') killTarget = a.target;
-            if(a.action === 'doctor_save') saveTarget = a.target;
-        });
-        
+        Object.values(nightActions).forEach(a => { if(a.action === 'mafia_kill') killTarget = a.target; if(a.action === 'doctor_save') saveTarget = a.target; });
         let updates = {};
         if(killTarget && killTarget !== saveTarget && players[killTarget]?.alive !== false){
             updates[`rooms/${roomId}/players/${killTarget}/alive`] = false;
             updates[`rooms/${roomId}/mafiaData/eliminatedTonight`] = killTarget;
             await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:`💀 قُتل ${players[killTarget]?.name} أثناء الليل`, time:Date.now() });
-        } else {
-            updates[`rooms/${roomId}/mafiaData/eliminatedTonight`] = null;
-        }
-        
+        } else { updates[`rooms/${roomId}/mafiaData/eliminatedTonight`] = null; }
         let alivePlayers = Object.entries(players).filter(([id,p])=>p.alive!==false && (killTarget !== id || killTarget === saveTarget));
         let aliveMafia = alivePlayers.filter(([id,p])=>p.role==='mafia').length;
         let aliveCitizens = alivePlayers.filter(([id,p])=>p.role!=='mafia').length;
-        
         if(aliveMafia === 0){
             updates[`rooms/${roomId}/phase`] = 'finished';
             await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:'🏆 فاز المواطنون! تم القضاء على جميع المافيا', time:Date.now() });
@@ -769,11 +725,9 @@
             updates[`rooms/${roomId}/mafiaData/nightActions`] = {};
             await push(ref(db, 'rooms/'+roomId+'/chat'), { type:'system', text:'☀️ حل الصباح... استيقظ الجميع', time:Date.now() });
         }
-        
         await update(ref(db), updates);
     }
 
-    // ========== مغادرة الغرفة ==========
     window.leaveRoom = async function() {
         if(state.roomId) { 
             await push(ref(db, 'rooms/'+state.roomId+'/chat'), { type:'system', text:state.playerName+' غادر الغرفة', time:Date.now() });
@@ -786,7 +740,6 @@
     };
     document.getElementById('lobbyBackBtn').onclick = leaveRoom;
 
-    // ========== لوحة المدير ==========
     window.promptAdmin = function() {
         let pwd = prompt('كلمة مرور المدير:');
         if(pwd === '0937318709Aa@') alert('مرحباً أيها المدير');
