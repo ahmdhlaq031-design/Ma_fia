@@ -1061,87 +1061,73 @@
         }
     }
     // ========== دالة renderRoomsList المعدلة بالكامل (إصلاح مشكلة الانضمام) ==========
-    function renderRoomsList(rooms, gameType) {
-        const listId = getRoomsListId();
-        const container = document.getElementById(listId);
-        if (!container) return;
-        
-        const filteredIds = Object.keys(rooms).filter(id => {
-            const r = rooms[id];
-            return r && r.game === gameType && r.phase !== 'finished';
-        });
-        
-        if (filteredIds.length === 0) {
-            const emoji = gameType === 'mafia' ? '🕵️‍♂️' : gameType === 'tarneeb' ? '♠️' : '🎴';
-            const name = gameType === 'mafia' ? 'مافيا' : gameType === 'tarneeb' ? 'طرنيب' : 'أونو';
-            
-            container.innerHTML = `
-                <div style="text-align:center;padding:60px 20px;color:var(--text-muted);">
-                    <div style="font-size:4rem;opacity:0.3;margin-bottom:15px;">${emoji}</div>
-                    <h3>لا توجد غرف ${name}</h3>
-                    <p>اضغط على + لإنشاء غرفة جديدة</p>
-                </div>`;
-            return;
-        }
-        
-        filteredIds.sort((a, b) => (rooms[b].createdAt || 0) - (rooms[a].createdAt || 0));
-        
-        const maxPlayers = gameType === 'tarneeb' ? 4 : gameType === 'uno' ? 8 : 16;
-        
-        // التعديل: إضافة data-room-data لتخزين بيانات الغرفة
-        container.innerHTML = filteredIds.map(id => {
-            const room = rooms[id];
-            const playerCount = room.players ? Object.keys(room.players).length : 0;
-            const isPrivate = room.isPrivate || false;
-            const isPlaying = room.phase !== 'lobby';
-            const isFull = playerCount >= maxPlayers;
-            
-            return `
-                <div class="room-card" data-room-id="${id}" data-room-data='${JSON.stringify(room).replace(/'/g, "&apos;")}' style="${isFull ? 'opacity:0.6;' : ''}">
-                    <div class="room-info">
-                        <h4>${isPrivate ? '🔒 ' : '🌐 '}${escapeHTML(room.name || 'بدون اسم')}</h4>
-                        <p>${escapeHTML(room.hostName || '---')} • ${isPlaying ? '🎯 جارية' : '⏳ انتظار'}</p>
-                    </div>
-                    <div style="text-align:center;">
-                        <div class="room-players">${playerCount}/${maxPlayers}</div>
-                        <span class="room-status ${isPlaying ? 'status-playing' : 'status-waiting'}">
-                            ${isPlaying ? 'جارية' : 'انتظار'}
-                        </span>
-                    </div>
-                </div>`;
-        }).join('');
-        
-        // التعديل: مستمع النقر المعدل لقراءة البيانات من data-room-data
-        container.querySelectorAll('.room-card').forEach(card => {
-            card.addEventListener('click', function(e) {
-                const roomId = this.dataset.roomId;
-                let roomData = this.dataset.roomData;
-                let room;
-                try {
-                    room = JSON.parse(roomData);
-                } catch(e) {
-                    console.error('خطأ في قراءة بيانات الغرفة', e);
-                    return;
-                }
-                if (!room) return;
-                
-                const playerCount = room.players ? Object.keys(room.players).length : 0;
-                const maxPlayersForGame = room.game === 'tarneeb' ? 4 : room.game === 'uno' ? 8 : 16;
-                
-                if (room.phase !== 'lobby') {
-                    showToast('⚠️ اللعبة بدأت بالفعل', 'error');
-                    return;
-                }
-                
-                if (playerCount >= maxPlayersForGame) {
-                    showToast('⚠️ الغرفة ممتلئة', 'error');
-                    return;
-                }
-                
-                handleRoomClick(roomId, room);
-            });
-        });
+function renderRoomsList(rooms, gameType) {
+    const listId = getRoomsListId();
+    const container = document.getElementById(listId);
+    if (!container) return;
+    
+    const filteredIds = Object.keys(rooms).filter(id => {
+        const r = rooms[id];
+        return r && r.game === gameType && r.phase !== 'finished';
+    });
+    
+    if (filteredIds.length === 0) {
+        const emoji = gameType === 'mafia' ? '🕵️‍♂️' : gameType === 'tarneeb' ? '♠️' : '🎴';
+        const name = gameType === 'mafia' ? 'مافيا' : gameType === 'tarneeb' ? 'طرنيب' : 'أونو';
+        container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--text-muted);"><div style="font-size:4rem;opacity:0.3;margin-bottom:15px;">${emoji}</div><h3>لا توجد غرف ${name}</h3><p>اضغط على + لإنشاء غرفة جديدة</p></div>`;
+        return;
     }
+    
+    filteredIds.sort((a, b) => (rooms[b].createdAt || 0) - (rooms[a].createdAt || 0));
+    const maxPlayers = gameType === 'tarneeb' ? 4 : gameType === 'uno' ? 8 : 16;
+    
+    container.innerHTML = filteredIds.map(id => {
+        const room = rooms[id];
+        const playerCount = room.players ? Object.keys(room.players).length : 0;
+        const isPrivate = room.isPrivate || false;
+        const isPlaying = room.phase !== 'lobby';
+        const isFull = playerCount >= maxPlayers;
+        return `<div class="room-card" data-room-id="${id}" data-room-name="${escapeHTML(room.name || 'بدون اسم')}" data-room-players="${playerCount}" data-room-max="${maxPlayers}" data-room-private="${isPrivate}" data-room-password="${isPrivate ? (room.password || '') : ''}" data-room-phase="${room.phase}" data-room-game="${room.game}" style="${isFull ? 'opacity:0.6;' : ''}"><div class="room-info"><h4>${isPrivate ? '🔒 ' : '🌐 '}${escapeHTML(room.name || 'بدون اسم')}</h4><p>${escapeHTML(room.hostName || '---')} • ${isPlaying ? '🎯 جارية' : '⏳ انتظار'}</p></div><div style="text-align:center;"><div class="room-players">${playerCount}/${maxPlayers}</div><span class="room-status ${isPlaying ? 'status-playing' : 'status-waiting'}">${isPlaying ? 'جارية' : 'انتظار'}</span></div></div>`;
+    }).join('');
+    
+    container.querySelectorAll('.room-card').forEach(card => {
+        card.addEventListener('click', function(e) {
+            const roomId = this.dataset.roomId;
+            const roomName = this.dataset.roomName;
+            const roomPlayers = parseInt(this.dataset.roomPlayers);
+            const roomMax = parseInt(this.dataset.roomMax);
+            const isPrivate = this.dataset.roomPrivate === 'true';
+            const roomPassword = this.dataset.roomPassword;
+            const roomPhase = this.dataset.roomPhase;
+            const roomGame = this.dataset.roomGame;
+            
+            if (roomPhase !== 'lobby') {
+                showToast('⚠️ اللعبة بدأت بالفعل', 'error');
+                return;
+            }
+            
+            if (roomPlayers >= roomMax) {
+                showToast('⚠️ الغرفة ممتلئة', 'error');
+                return;
+            }
+            
+            state.targetRoom = roomId;
+            state.currentGame = roomGame;
+            
+            if (isPrivate && roomPassword) {
+                document.getElementById('passwordRoomName').textContent = roomName;
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordModal').classList.add('active');
+                setTimeout(() => document.getElementById('passwordInput')?.focus(), 400);
+            } else {
+                document.getElementById('nameModalTitle').textContent = 'الدخول إلى: ' + roomName;
+                document.getElementById('joinNameInput').value = '';
+                document.getElementById('nameModal').classList.add('active');
+                setTimeout(() => document.getElementById('joinNameInput')?.focus(), 400);
+            }
+        });
+    });
+}
     
     function handleRoomClick(roomId, room) {
         state.targetRoom = roomId;
